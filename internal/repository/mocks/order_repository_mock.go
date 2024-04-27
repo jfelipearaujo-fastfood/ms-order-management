@@ -60,6 +60,34 @@ func (_m *MockOrderRepository) GetByID(ctx context.Context, id string) (entity.O
 	return r0, r1
 }
 
+// GetByTrackID provides a mock function with given fields: ctx, trackId
+func (_m *MockOrderRepository) GetByTrackID(ctx context.Context, trackId string) (entity.Order, error) {
+	ret := _m.Called(ctx, trackId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByTrackID")
+	}
+
+	var r0 entity.Order
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.Order, error)); ok {
+		return rf(ctx, trackId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) entity.Order); ok {
+		r0 = rf(ctx, trackId)
+	} else {
+		r0 = ret.Get(0).(entity.Order)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, trackId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewMockOrderRepository creates a new instance of MockOrderRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockOrderRepository(t interface {

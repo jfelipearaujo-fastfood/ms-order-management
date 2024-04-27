@@ -71,21 +71,30 @@ func (r *OrderRepository) Create(ctx context.Context, order *entity.Order) error
 }
 
 func (r *OrderRepository) GetByID(ctx context.Context, id string) (entity.Order, error) {
+	return r.getBy(ctx, "id", id)
+}
+
+func (r *OrderRepository) GetByTrackID(ctx context.Context, trackId string) (entity.Order, error) {
+	return r.getBy(ctx, "track_id", trackId)
+}
+
+func (r *OrderRepository) getBy(ctx context.Context, column string, value string) (entity.Order, error) {
 	order := entity.Order{}
 
 	queryGetOrder := `
 		SELECT id, customer_id, track_id, state, state_updated_at, created_at, updated_at
 		FROM orders
-		WHERE id = $1;	
+		WHERE $1 = $2;	
 	`
 
 	queryGetOrderItems := `
-		SELECT product_id, quantity, price
-		FROM order_items
-		WHERE order_id = $1;
+		SELECT oi.product_id, oi.quantity, oi.price
+		FROM order_items oi
+		LEFT JOIN orders o ON o.id = oi.order_id
+		WHERE oi.order_id = $1 OR o.track_id = $1;
 	`
 
-	statement, err := r.conn.QueryContext(ctx, queryGetOrder, id)
+	statement, err := r.conn.QueryContext(ctx, queryGetOrder, column, value)
 	if err != nil {
 		return entity.Order{}, err
 	}
@@ -111,7 +120,7 @@ func (r *OrderRepository) GetByID(ctx context.Context, id string) (entity.Order,
 
 	order.Items = []entity.Item{}
 
-	statement, err = r.conn.QueryContext(ctx, queryGetOrderItems, id)
+	statement, err = r.conn.QueryContext(ctx, queryGetOrderItems, value)
 	if err != nil {
 		return entity.Order{}, err
 	}
