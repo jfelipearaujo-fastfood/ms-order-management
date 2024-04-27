@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 )
@@ -139,4 +141,58 @@ func (r *OrderRepository) getBy(ctx context.Context, column string, value string
 	}
 
 	return order, nil
+}
+
+func (r *OrderRepository) GetAll(
+	ctx context.Context,
+	pagination common.Pagination,
+	filter repository.GetAllOrdersFilter,
+) ([]entity.Order, error) {
+	skip := pagination.Page*pagination.Size - pagination.Size
+
+	var stateFilter goqu.Expression
+
+	if filter.State > 0 {
+		stateFilter = goqu.Ex{"state": filter.State}
+	} else {
+		stateFilter = goqu.Ex{}
+	}
+
+	sql, params, err := goqu.
+		From("orders").
+		Select("id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at").
+		Where(stateFilter).
+		Order(goqu.I("created_at").Asc()).
+		Limit(uint(pagination.Size)).
+		Offset(uint(skip)).
+		ToSQL()
+
+	if err != nil {
+		return nil, err
+	}
+
+	statement, err := r.conn.QueryContext(ctx, sql, params...)
+	if err != nil {
+		return nil, err
+	}
+
+	orders := []entity.Order{}
+
+	for statement.Next() {
+		order := entity.Order{}
+		err = statement.Scan(
+			&order.UUID,
+			&order.CustomerID,
+			&order.TrackID,
+			&order.State,
+			&order.StateUpdatedAt,
+			&order.CreatedAt,
+			&order.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+
+	return orders, nil
 }

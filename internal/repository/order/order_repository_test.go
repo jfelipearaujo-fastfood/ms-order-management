@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 	"github.com/stretchr/testify/assert"
@@ -743,6 +744,150 @@ func TestGetByTrackID(t *testing.T) {
 
 		// Act
 		res, err := repo.GetByTrackID(ctx, trackId)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.Empty(t, res)
+	})
+}
+
+func TestGetAll(t *testing.T) {
+	t.Run("Should get the orders without filtering", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		orderId := uuid.NewString()
+		customerId := uuid.NewString()
+
+		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
+			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
+			WillReturnRows(orderRows)
+
+		repo := NewOrderRepository(db)
+
+		pagination := common.Pagination{
+			Page: 1,
+			Size: 10,
+		}
+
+		filter := repository.GetAllOrdersFilter{}
+
+		// Act
+		res, err := repo.GetAll(ctx, pagination, filter)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.NotEmpty(t, res)
+	})
+
+	t.Run("Should get the orders with filtering", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		orderId := uuid.NewString()
+		customerId := uuid.NewString()
+
+		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
+			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
+			WillReturnRows(orderRows)
+
+		repo := NewOrderRepository(db)
+
+		pagination := common.Pagination{
+			Page: 1,
+			Size: 10,
+		}
+
+		filter := repository.GetAllOrdersFilter{
+			State: entity.Created,
+		}
+
+		// Act
+		res, err := repo.GetAll(ctx, pagination, filter)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.NotEmpty(t, res)
+	})
+
+	t.Run("Should return error when something got wrong with order query", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
+			WillReturnError(errors.New("something got wrong"))
+
+		repo := NewOrderRepository(db)
+
+		pagination := common.Pagination{
+			Page: 1,
+			Size: -10,
+		}
+
+		filter := repository.GetAllOrdersFilter{}
+
+		// Act
+		res, err := repo.GetAll(ctx, pagination, filter)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.Empty(t, res)
+	})
+
+	t.Run("Should return scan error", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		orderId := uuid.NewString()
+		customerId := uuid.NewString()
+
+		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
+			AddRow(orderId, customerId, "ABC123", "Created", now, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
+			WillReturnRows(orderRows)
+
+		repo := NewOrderRepository(db)
+
+		pagination := common.Pagination{
+			Page: 1,
+			Size: 10,
+		}
+
+		filter := repository.GetAllOrdersFilter{}
+
+		// Act
+		res, err := repo.GetAll(ctx, pagination, filter)
 
 		// Assert
 		assert.Error(t, err)
