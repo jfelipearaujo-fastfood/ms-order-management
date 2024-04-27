@@ -895,3 +895,410 @@ func TestGetAll(t *testing.T) {
 		assert.Empty(t, res)
 	})
 }
+
+func TestUpdate(t *testing.T) {
+	t.Run("Should update an order without update the items", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectCommit()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error when no order were updated", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectRollback()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.ErrorIs(t, err, repository.ErrOrderNotFound)
+	})
+
+	t.Run("Should return error if rows affected return error when no order were updated", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewErrorResult(errors.New("something got wrong")))
+		mock.ExpectRollback()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error if rollback fails when rows affected return error and no order were updated", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewErrorResult(errors.New("something got wrong")))
+
+		mock.ExpectRollback().
+			WillReturnError(errors.New("something got wrong"))
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error if rollback fails when no order were updated", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+
+		mock.ExpectRollback().
+			WillReturnError(errors.New("something got wrong"))
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error when update order fails", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnError(errors.New("something got wrong"))
+		mock.ExpectRollback()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error if rollback fails when update order fails", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnError(errors.New("something got wrong"))
+		mock.ExpectRollback().
+			WillReturnError(errors.New("something got wrong"))
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, false)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should update an order and update the items", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("DELETE FROM order_items").
+			WithArgs(order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("INSERT INTO order_items").
+			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectCommit()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, true)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error if rollback fails when insert the new items", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("DELETE FROM order_items").
+			WithArgs(order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("INSERT INTO order_items").
+			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WillReturnError(errors.New("something got wrong"))
+
+		mock.ExpectRollback().
+			WillReturnError(errors.New("something got wrong"))
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, true)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error when insert the new items", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("DELETE FROM order_items").
+			WithArgs(order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("INSERT INTO order_items").
+			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WillReturnError(errors.New("something got wrong"))
+
+		mock.ExpectRollback()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, true)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error if rollback fails when deleting old items", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("DELETE FROM order_items").
+			WithArgs(order.UUID).
+			WillReturnError(errors.New("something got wrong"))
+
+		mock.ExpectRollback().
+			WillReturnError(errors.New("something got wrong"))
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, true)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Should return error when deleting old items", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		now := time.Now()
+
+		order := entity.NewOrder("customer_id", now)
+		item := entity.NewItem("product_id", 1, 10.0)
+		order.AddItem(item, now)
+
+		mock.ExpectBegin()
+		mock.ExpectExec("UPDATE orders").
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		mock.ExpectExec("DELETE FROM order_items").
+			WithArgs(order.UUID).
+			WillReturnError(errors.New("something got wrong"))
+
+		mock.ExpectRollback()
+
+		repo := NewOrderRepository(db)
+
+		// Act
+		err = repo.Update(ctx, &order, true)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+	})
+}

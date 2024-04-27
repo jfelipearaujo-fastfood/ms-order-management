@@ -196,3 +196,88 @@ func (r *OrderRepository) GetAll(
 
 	return orders, nil
 }
+
+func (r *OrderRepository) Update(ctx context.Context, order *entity.Order, updateItems bool) error {
+	queryUpdateOrder := `
+		UPDATE orders
+		SET state = $1, state_updated_at = $2, updated_at = $3
+		WHERE id = $4;
+	`
+
+	queryDeleteOrderItems := `
+		DELETE FROM order_items
+		WHERE order_id = $1;
+	`
+
+	queryInsertOrderItems := `
+		INSERT INTO order_items (order_id, product_id, quantity, price)
+		VALUES ($1, $2, $3, $4);
+	`
+
+	tx, err := r.conn.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx,
+		queryUpdateOrder,
+		order.State,
+		order.StateUpdatedAt,
+		order.UpdatedAt,
+		order.UUID)
+	if err != nil {
+		errTx := tx.Rollback()
+		if errTx != nil {
+			return errTx
+		}
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		errTx := tx.Rollback()
+		if errTx != nil {
+			return errTx
+		}
+		return err
+	}
+
+	if rowsAffected == 0 {
+		errTx := tx.Rollback()
+		if errTx != nil {
+			return errTx
+		}
+		return repository.ErrOrderNotFound
+	}
+
+	if updateItems {
+		_, err = tx.ExecContext(ctx,
+			queryDeleteOrderItems,
+			order.UUID)
+		if err != nil {
+			errTx := tx.Rollback()
+			if errTx != nil {
+				return errTx
+			}
+			return err
+		}
+
+		for _, item := range order.Items {
+			_, err = tx.ExecContext(ctx,
+				queryInsertOrderItems,
+				order.UUID,
+				item.UUID,
+				item.Quantity,
+				item.UnitPrice)
+			if err != nil {
+				errTx := tx.Rollback()
+				if errTx != nil {
+					return errTx
+				}
+				return err
+			}
+		}
+	}
+
+	return tx.Commit()
+}
