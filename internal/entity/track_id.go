@@ -1,9 +1,9 @@
 package entity
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
-	"time"
+	"math/big"
 )
 
 type TrackID string
@@ -31,10 +31,13 @@ func randomNumbers(n int) string {
 }
 
 func randomFromSet(set []rune, n int) string {
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(set))))
+	if err != nil {
+		panic(err)
+	}
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = set[rnd.Intn(len(set))]
+		b[i] = set[idx.Int64()]
 	}
 	return string(b)
 }
