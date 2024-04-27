@@ -21,3 +21,17 @@ packages:
           mockname: "Mock{{.InterfaceName}}"
           outpkg: "mocks"
           include-regex: "(Repository)"
+    github.com/jfelipearaujo-org/ms-order-management/internal/service:
+        config:
+          filename: "{{ .InterfaceName | snakecase }}_mock.go"
+          dir: "./internal/service/mocks"
+          mockname: "Mock{{.InterfaceName}}"
+          outpkg: "mocks"
+          include-regex: "(Service)"
+    github.com/jfelipearaujo-org/ms-order-management/internal/provider:
+        config:
+          filename: "{{ .InterfaceName | snakecase }}_mock.go"
+          dir: "./internal/provider/mocks"
+          mockname: "Mock{{.InterfaceName}}"
+          outpkg: "mocks"
+          include-regex: "(Provider)"
