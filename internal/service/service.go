@@ -7,12 +7,8 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 )
 
-type CreateOrderDto struct {
-	CustomerID string `json:"customer_id"`
-}
-
-type CreateOrderService interface {
-	Handle(ctx context.Context, request CreateOrderDto) (*entity.Order, error)
+type CreateOrderService[T any] interface {
+	Handle(ctx context.Context, request T) (*entity.Order, error)
 }
 
 type GetOrderDto struct {
