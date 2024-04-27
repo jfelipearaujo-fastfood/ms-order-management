@@ -14,4 +14,5 @@ var (
 type OrderRepository interface {
 	Create(ctx context.Context, order *entity.Order) error
 	GetByID(ctx context.Context, id string) (entity.Order, error)
+	GetByTrackID(ctx context.Context, trackId string) (entity.Order, error)
 }
