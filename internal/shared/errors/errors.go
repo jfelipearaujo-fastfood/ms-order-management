@@ -7,10 +7,9 @@ import (
 )
 
 var (
-	ErrNotFound              error = baseErrors.New("content not found")
-	ErrRequestNotValid       error = baseErrors.New("request not valid, please check the fields")
-	ErrCategoryAlreadyExists error = baseErrors.New("category already exists")
-	ErrProductAlreadyExists  error = baseErrors.New("product already exists")
+	ErrNotFound               error = baseErrors.New("content not found")
+	ErrRequestNotValid        error = baseErrors.New("request not valid, please check the fields")
+	ErrInvalidStateTransition error = baseErrors.New("invalid state transition")
 )
 
 type AppError struct {
