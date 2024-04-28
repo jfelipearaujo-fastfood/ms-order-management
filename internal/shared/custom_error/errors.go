@@ -11,4 +11,6 @@ var (
 	ErrOrderItemAlreadyExists      BusinessError = New(http.StatusConflict, "unable to add an item", "order item already exists")
 	ErrOrderInProgress             BusinessError = New(http.StatusBadRequest, "unable to update/insert information to the order", "order is in progress")
 	ErrOrderAlreadyCompleted       BusinessError = New(http.StatusBadRequest, "unable to update/insert information to the order", "order is already completed or cancelled")
+
+	ErrTopicNotFound BusinessError = New(http.StatusNotFound, "unable to find the topic", "topic not found")
 )
