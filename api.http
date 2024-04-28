@@ -3,3 +3,11 @@
 ### Health Check
 GET {{host}}/health
 Content-Type: application/json
+
+### Create Order
+POST {{host}}/api/v1/orders
+Content-Type: application/json
+
+{
+  "customer_id": "19b5408e-8ee2-47d4-953b-196d41f1e367"
+}

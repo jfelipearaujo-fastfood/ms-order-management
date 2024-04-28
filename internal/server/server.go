@@ -7,7 +7,11 @@ import (
 
 	"github.com/jfelipearaujo-org/ms-order-management/internal/adapter/database"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/create"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/health"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/provider/time_provider"
+	order_repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository/order"
+	order_create_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -38,7 +42,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	s.registerHealthCheck(e)
 
-	//group := e.Group(fmt.Sprintf("/api/%s", s.Config.ApiConfig.ApiVersion))
+	group := e.Group(fmt.Sprintf("/api/%s", s.Config.ApiConfig.ApiVersion))
+
+	s.registerOrderHandlers(group)
 
 	return e
 }
@@ -47,4 +53,20 @@ func (server *Server) registerHealthCheck(e *echo.Echo) {
 	healthHandler := health.NewHandler(server.db)
 
 	e.GET("/health", healthHandler.Handle)
+}
+
+func (s *Server) registerOrderHandlers(e *echo.Group) {
+	// providers
+	timeProvider := time_provider.NewTimeProvider(time.Now)
+
+	// repositories
+	repository := order_repository.NewOrderRepository(s.db.GetInstance())
+
+	// services
+	createOrderService := order_create_service.NewService(repository, timeProvider)
+
+	// handlers
+	createOrderHandler := create.NewHandler(createOrderService)
+
+	e.POST("/orders", createOrderHandler.Handle)
 }

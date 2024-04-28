@@ -150,18 +150,20 @@ func (r *OrderRepository) GetAll(
 ) (int, []entity.Order, error) {
 	skip := pagination.Page*pagination.Size - pagination.Size
 
-	var stateFilter goqu.Expression
-
-	if filter.State > 0 {
-		stateFilter = goqu.Ex{"state": filter.State}
-	} else {
-		stateFilter = goqu.Ex{}
-	}
+	stateFilter := goqu.And(
+		goqu.Ex{"customer_id": filter.CustomerID},
+		goqu.Ex{"state": goqu.Op{
+			"gte": filter.StateFrom,
+		}},
+		goqu.Ex{"state": goqu.Op{
+			"lt": filter.StateTo,
+		}},
+	)
 
 	sql, params, err := goqu.
 		From("orders").
 		Select(goqu.COUNT("id")).
-		Where(stateFilter).
+		Where(goqu.And(stateFilter)).
 		Limit(uint(pagination.Size)).
 		Offset(uint(skip)).
 		ToSQL()

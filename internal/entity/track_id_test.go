@@ -9,14 +9,14 @@ import (
 func TestNewTrackID(t *testing.T) {
 	t.Run("Should return a new track ID", func(t *testing.T) {
 		// Arrange
-		expectedLength := 6
+		expectedLength := 7
 
 		// Act
 		res := NewTrackID()
 
 		// Assert
 		assert.Len(t, res, expectedLength)
-		assert.Regexp(t, "^[A-Z]{3}[0-9]{3}$", res)
+		assert.Regexp(t, "^[A-Z]{3}-[0-9]{3}$", res)
 	})
 
 	t.Run("Should return a different track ID each time", func(t *testing.T) {
@@ -31,10 +31,10 @@ func TestNewTrackID(t *testing.T) {
 
 	t.Run("Should return a track ID from a string", func(t *testing.T) {
 		// Arrange
-		expected := TrackID("ABC123")
+		expected := TrackID("ABC-123")
 
 		// Act
-		res := NewTrackIDFrom("ABC123")
+		res := NewTrackIDFrom("ABC-123")
 
 		// Assert
 		assert.Equal(t, expected, res)

@@ -2,13 +2,14 @@ package create
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	provider_mock "github.com/jfelipearaujo-org/ms-order-management/internal/provider/mocks"
 	repository_mock "github.com/jfelipearaujo-org/ms-order-management/internal/repository/mocks"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -20,6 +21,10 @@ func TestHandle(t *testing.T) {
 		timeProvider := provider_mock.NewMockTimeProvider(t)
 
 		now := time.Now()
+
+		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
+			Return(0, []entity.Order{}, nil).
+			Once()
 
 		repository.On("Create", mock.Anything, mock.Anything).
 			Return(nil).
@@ -77,12 +82,71 @@ func TestHandle(t *testing.T) {
 
 		now := time.Now()
 
+		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
+			Return(0, []entity.Order{}, nil).
+			Once()
+
 		repository.On("Create", mock.Anything, mock.Anything).
-			Return(errors.New("something got wrong")).
+			Return(assert.AnError).
 			Once()
 
 		timeProvider.On("GetTime").
 			Return(now).
+			Once()
+
+		service := NewService(repository, timeProvider)
+
+		ctx := context.Background()
+
+		request := CreateOrderDto{
+			CustomerID: uuid.NewString(),
+		}
+
+		// Act
+		resp, err := service.Handle(ctx, request)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		repository.AssertExpectations(t)
+		timeProvider.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when already exists an active order for the customer", func(t *testing.T) {
+		// Arrange
+		repository := repository_mock.NewMockOrderRepository(t)
+		timeProvider := provider_mock.NewMockTimeProvider(t)
+
+		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
+			Return(1, []entity.Order{}, nil).
+			Once()
+
+		service := NewService(repository, timeProvider)
+
+		ctx := context.Background()
+
+		request := CreateOrderDto{
+			CustomerID: uuid.NewString(),
+		}
+
+		// Act
+		resp, err := service.Handle(ctx, request)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, errors.ErrOrderAlreadyExists)
+		assert.Nil(t, resp)
+		repository.AssertExpectations(t)
+		timeProvider.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when repository returns error when search for on-going order", func(t *testing.T) {
+		// Arrange
+		repository := repository_mock.NewMockOrderRepository(t)
+		timeProvider := provider_mock.NewMockTimeProvider(t)
+
+		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
+			Return(0, []entity.Order{}, assert.AnError).
 			Once()
 
 		service := NewService(repository, timeProvider)

@@ -884,7 +884,7 @@ func TestGetAll(t *testing.T) {
 		}
 
 		filter := repository.GetAllOrdersFilter{
-			State: entity.Created,
+			StateFrom: entity.Created,
 		}
 
 		// Act
