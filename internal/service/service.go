@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 )
 
@@ -15,14 +14,8 @@ type GetOrderService[T any] interface {
 	Handle(ctx context.Context, request T) (entity.Order, error)
 }
 
-type GetOrdersDto struct {
-	State int `query:"state"`
-
-	common.Pagination
-}
-
-type GetOrdersService interface {
-	Handle(ctx context.Context, request GetOrdersDto) ([]entity.Order, error)
+type GetOrdersService[T any] interface {
+	Handle(ctx context.Context, request T) (int, []entity.Order, error)
 }
 
 type UpdateOrderDto struct {

@@ -3,7 +3,7 @@ package entity
 type State int
 
 const (
-	None State = iota + 1
+	None State = iota
 	Created
 	Received
 	Processing
@@ -29,4 +29,8 @@ func (s State) CanTransitionTo(to State) bool {
 		}
 	}
 	return false
+}
+
+func IsValidState(s State) bool {
+	return s >= Created && s <= Cancelled
 }

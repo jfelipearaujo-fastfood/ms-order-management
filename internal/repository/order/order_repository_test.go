@@ -766,6 +766,9 @@ func TestGetAll(t *testing.T) {
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
 
+		mock.ExpectQuery("SELECT COUNT(.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
 
@@ -782,12 +785,73 @@ func TestGetAll(t *testing.T) {
 		filter := repository.GetAllOrdersFilter{}
 
 		// Act
-		res, err := repo.GetAll(ctx, pagination, filter)
+		count, res, err := repo.GetAll(ctx, pagination, filter)
 
 		// Assert
 		assert.NoError(t, err)
 		assert.Nil(t, mock.ExpectationsWereMet())
 		assert.NotEmpty(t, res)
+		assert.Equal(t, 1, count)
+	})
+
+	t.Run("Should return error when something got wrong with order count", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		mock.ExpectQuery("SELECT COUNT(.+) FROM (.+)?orders(.+)?").
+			WillReturnError(assert.AnError)
+
+		repo := NewOrderRepository(db)
+
+		pagination := common.Pagination{
+			Page: 1,
+			Size: 10,
+		}
+
+		filter := repository.GetAllOrdersFilter{}
+
+		// Act
+		count, res, err := repo.GetAll(ctx, pagination, filter)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.Empty(t, res)
+		assert.Equal(t, 0, count)
+	})
+
+	t.Run("Should return scan error from order count", func(t *testing.T) {
+		// Arrange
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		ctx := context.Background()
+
+		mock.ExpectQuery("SELECT COUNT(.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow("abc"))
+
+		repo := NewOrderRepository(db)
+
+		pagination := common.Pagination{
+			Page: 1,
+			Size: 10,
+		}
+
+		filter := repository.GetAllOrdersFilter{}
+
+		// Act
+		count, res, err := repo.GetAll(ctx, pagination, filter)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, mock.ExpectationsWereMet())
+		assert.Empty(t, res)
+		assert.Equal(t, 0, count)
 	})
 
 	t.Run("Should get the orders with filtering", func(t *testing.T) {
@@ -802,6 +866,9 @@ func TestGetAll(t *testing.T) {
 
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
+
+		mock.ExpectQuery("SELECT COUNT(.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
@@ -821,12 +888,13 @@ func TestGetAll(t *testing.T) {
 		}
 
 		// Act
-		res, err := repo.GetAll(ctx, pagination, filter)
+		count, res, err := repo.GetAll(ctx, pagination, filter)
 
 		// Assert
 		assert.NoError(t, err)
 		assert.Nil(t, mock.ExpectationsWereMet())
 		assert.NotEmpty(t, res)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("Should return error when something got wrong with order query", func(t *testing.T) {
@@ -836,6 +904,9 @@ func TestGetAll(t *testing.T) {
 		defer db.Close()
 
 		ctx := context.Background()
+
+		mock.ExpectQuery("SELECT COUNT(.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
 			WillReturnError(errors.New("something got wrong"))
@@ -850,12 +921,13 @@ func TestGetAll(t *testing.T) {
 		filter := repository.GetAllOrdersFilter{}
 
 		// Act
-		res, err := repo.GetAll(ctx, pagination, filter)
+		count, res, err := repo.GetAll(ctx, pagination, filter)
 
 		// Assert
 		assert.Error(t, err)
 		assert.Nil(t, mock.ExpectationsWereMet())
 		assert.Empty(t, res)
+		assert.Equal(t, 0, count)
 	})
 
 	t.Run("Should return scan error", func(t *testing.T) {
@@ -870,6 +942,9 @@ func TestGetAll(t *testing.T) {
 
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
+
+		mock.ExpectQuery("SELECT COUNT(.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, "ABC123", "Created", now, now, now)
@@ -887,12 +962,13 @@ func TestGetAll(t *testing.T) {
 		filter := repository.GetAllOrdersFilter{}
 
 		// Act
-		res, err := repo.GetAll(ctx, pagination, filter)
+		count, res, err := repo.GetAll(ctx, pagination, filter)
 
 		// Assert
 		assert.Error(t, err)
 		assert.Nil(t, mock.ExpectationsWereMet())
 		assert.Empty(t, res)
+		assert.Equal(t, 0, count)
 	})
 }
 

@@ -147,7 +147,7 @@ func (r *OrderRepository) GetAll(
 	ctx context.Context,
 	pagination common.Pagination,
 	filter repository.GetAllOrdersFilter,
-) ([]entity.Order, error) {
+) (int, []entity.Order, error) {
 	skip := pagination.Page*pagination.Size - pagination.Size
 
 	var stateFilter goqu.Expression
@@ -160,6 +160,32 @@ func (r *OrderRepository) GetAll(
 
 	sql, params, err := goqu.
 		From("orders").
+		Select(goqu.COUNT("id")).
+		Where(stateFilter).
+		Limit(uint(pagination.Size)).
+		Offset(uint(skip)).
+		ToSQL()
+
+	if err != nil {
+		return 0, nil, err
+	}
+
+	statement, err := r.conn.QueryContext(ctx, sql, params...)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var count int
+
+	for statement.Next() {
+		err = statement.Scan(&count)
+		if err != nil {
+			return 0, nil, err
+		}
+	}
+
+	sql, params, err = goqu.
+		From("orders").
 		Select("id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at").
 		Where(stateFilter).
 		Order(goqu.I("created_at").Asc()).
@@ -168,12 +194,12 @@ func (r *OrderRepository) GetAll(
 		ToSQL()
 
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	statement, err := r.conn.QueryContext(ctx, sql, params...)
+	statement, err = r.conn.QueryContext(ctx, sql, params...)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	orders := []entity.Order{}
@@ -189,12 +215,12 @@ func (r *OrderRepository) GetAll(
 			&order.CreatedAt,
 			&order.UpdatedAt)
 		if err != nil {
-			return nil, err
+			return 0, nil, err
 		}
 		orders = append(orders, order)
 	}
 
-	return orders, nil
+	return count, orders, nil
 }
 
 func (r *OrderRepository) Update(ctx context.Context, order *entity.Order, updateItems bool) error {
