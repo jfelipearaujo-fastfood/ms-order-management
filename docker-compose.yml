@@ -32,7 +32,7 @@ services:
       - api-network
 
 networks:
-  api:
+  api-network:
     driver: bridge
 
 volumes:
