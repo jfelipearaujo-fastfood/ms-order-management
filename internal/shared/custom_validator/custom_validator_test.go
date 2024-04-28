@@ -85,7 +85,7 @@ func TestValidateTrackIDWhenNotEmpty(t *testing.T) {
 		assert.NoError(t, err)
 
 		data := test{
-			TrackID: "ABC123",
+			TrackID: "ABC-123",
 		}
 
 		// Act

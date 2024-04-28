@@ -44,7 +44,7 @@ func TestHandle(t *testing.T) {
 		// Arrange
 		ctx := context.Background()
 
-		trackId := "ABC123"
+		trackId := "ABC-123"
 
 		repository := mocks.NewMockOrderRepository(t)
 
@@ -157,7 +157,7 @@ func TestHandle(t *testing.T) {
 		// Arrange
 		ctx := context.Background()
 
-		trackId := "ABC123"
+		trackId := "ABC-123"
 
 		repository := mocks.NewMockOrderRepository(t)
 
