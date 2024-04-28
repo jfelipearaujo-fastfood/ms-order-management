@@ -38,33 +38,40 @@ func (_m *MockOrderRepository) Create(ctx context.Context, order *entity.Order) 
 }
 
 // GetAll provides a mock function with given fields: ctx, pagination, filter
-func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pagination, filter repository.GetAllOrdersFilter) ([]entity.Order, error) {
+func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pagination, filter repository.GetAllOrdersFilter) (int, []entity.Order, error) {
 	ret := _m.Called(ctx, pagination, filter)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAll")
 	}
 
-	var r0 []entity.Order
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) ([]entity.Order, error)); ok {
+	var r0 int
+	var r1 []entity.Order
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) (int, []entity.Order, error)); ok {
 		return rf(ctx, pagination, filter)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) []entity.Order); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) int); ok {
 		r0 = rf(ctx, pagination, filter)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]entity.Order)
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) []entity.Order); ok {
+		r1 = rf(ctx, pagination, filter)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]entity.Order)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) error); ok {
-		r1 = rf(ctx, pagination, filter)
+	if rf, ok := ret.Get(2).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) error); ok {
+		r2 = rf(ctx, pagination, filter)
 	} else {
-		r1 = ret.Error(1)
+		r2 = ret.Error(2)
 	}
 
-	return r0, r1
+	return r0, r1, r2
 }
 
 // GetByID provides a mock function with given fields: ctx, id

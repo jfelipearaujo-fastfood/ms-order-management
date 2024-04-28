@@ -54,3 +54,27 @@ func TestCanTransitionTo(t *testing.T) {
 		}
 	})
 }
+
+func TestIsValidState(t *testing.T) {
+	t.Run("Should return true when state is valid", func(t *testing.T) {
+		// Arrange
+		state := Created
+
+		// Act
+		res := IsValidState(state)
+
+		// Assert
+		assert.True(t, res)
+	})
+
+	t.Run("Should return false when state is invalid", func(t *testing.T) {
+		// Arrange
+		state := State(0)
+
+		// Act
+		res := IsValidState(state)
+
+		// Assert
+		assert.False(t, res)
+	})
+}

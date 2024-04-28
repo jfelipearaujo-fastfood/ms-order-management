@@ -1,0 +1,21 @@
+package get_all
+
+import (
+	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+)
+
+type GetOrdersDto struct {
+	State int `query:"state"`
+
+	common.Pagination
+}
+
+func (dto *GetOrdersDto) Validate() error {
+	if entity.IsValidState(entity.State(dto.State)) {
+		return nil
+	}
+
+	return errors.ErrRequestNotValid
+}
