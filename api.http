@@ -12,6 +12,14 @@ Content-Type: application/json
   "customer_id": "19b5408e-8ee2-47d4-953b-196d41f1e367"
 }
 
+### Get order by ID
+GET {{host}}/api/v1/orders/75c2a7f5-2dff-4cd5-b4e9-ffdeee1c27f9
+Content-Type: application/json
+
+### Get order by Tack ID
+GET {{host}}/api/v1/orders/tracking/FOB-179
+Content-Type: application/json
+
 ### Add item to the order
 POST {{host}}/api/v1/orders/75c2a7f5-2dff-4cd5-b4e9-ffdeee1c27f9/items
 Content-Type: application/json

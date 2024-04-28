@@ -45,7 +45,7 @@ func ValidateTrackIDWhenNotEmpty(fl validator.FieldLevel) bool {
 		return true
 	}
 
-	pattern := "^[A-Z]{3}[0-9]{3}$"
+	pattern := "^[A-Z]{3}-[0-9]{3}$"
 
 	regex := regexp.MustCompile(pattern)
 

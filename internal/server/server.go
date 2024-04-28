@@ -9,6 +9,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/add_item"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/create"
+	get_by_id "github.com/jfelipearaujo-org/ms-order-management/internal/handler/get_by_id_or_track_id"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/health"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/provider/time_provider"
 	order_repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository/order"
@@ -73,7 +74,10 @@ func (s *Server) registerOrderHandlers(e *echo.Group) {
 	// handlers
 	createOrderHandler := create.NewHandler(createOrderService)
 	addOrderItemHandler := add_item.NewHandler(getOrderService, updateOrderService)
+	getOrderByIdOrTrackIdHandler := get_by_id.NewHandler(getOrderService)
 
 	e.POST("/orders", createOrderHandler.Handle)
 	e.POST("/orders/:id/items", addOrderItemHandler.Handle)
+	e.GET("/orders/:id", getOrderByIdOrTrackIdHandler.Handle)
+	e.GET("/orders/tracking/:track_id", getOrderByIdOrTrackIdHandler.Handle)
 }

@@ -51,7 +51,7 @@ func TestValidate(t *testing.T) {
 	t.Run("Should return nil when dto is valid with trackId", func(t *testing.T) {
 		// Arrange
 		dto := GetOrderDto{
-			TrackId: "ABC456",
+			TrackId: "ABC-456",
 		}
 
 		// Act
