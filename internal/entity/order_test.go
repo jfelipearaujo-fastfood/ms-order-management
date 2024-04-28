@@ -41,9 +41,10 @@ func TestNewOrder(t *testing.T) {
 		order := NewOrder("customer_id", now)
 
 		// Act
-		order.AddItem(NewItem("item_id", 1.23, 1), now)
+		err := order.AddItem(NewItem("item_id", 1.23, 1), now)
 
 		// Assert
+		assert.NoError(t, err)
 		assert.Len(t, order.Items, 1)
 		assert.Contains(t, order.Items, expectedItem)
 	})
@@ -54,8 +55,13 @@ func TestNewOrder(t *testing.T) {
 
 		order := NewOrder("customer_id", now)
 
-		order.AddItem(NewItem("item_id_1", 1.23, 1), now)
-		order.AddItem(NewItem("item_id_2", 2.34, 2), now)
+		var err error
+
+		err = order.AddItem(NewItem("item_id_1", 1.23, 1), now)
+		assert.NoError(t, err)
+
+		err = order.AddItem(NewItem("item_id_2", 2.34, 2), now)
+		assert.NoError(t, err)
 
 		// Act
 		order.calculateTotals()
@@ -94,5 +100,104 @@ func TestNewOrder(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
+	})
+
+	t.Run("Should not update the state if is the same state", func(t *testing.T) {
+		// Arrange
+		past := time.Now().Add(-time.Hour)
+		now := time.Now()
+
+		order := NewOrder("customer_id", past)
+
+		// Act
+		err := order.UpdateState(Created, now)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, Created, order.State)
+		assert.Equal(t, past, order.StateUpdatedAt)
+		assert.Equal(t, past, order.UpdatedAt)
+	})
+
+	t.Run("Should refresh the state title", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+
+		// Act
+		order.RefreshStateTitle()
+
+		// Assert
+		assert.Equal(t, "Created", order.StateTitle)
+	})
+
+	t.Run("Should allow add an item to the order", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+
+		// Act
+		res := order.CanAddItems()
+
+		// Assert
+		assert.True(t, res)
+	})
+
+	t.Run("Should not allow add an item to the order", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		order.State = Received
+
+		// Act
+		res := order.CanAddItems()
+
+		// Assert
+		assert.False(t, res)
+	})
+
+	t.Run("Should return true if the order is already completed", func(t *testing.T) {
+		// Arrange
+		states := []State{Delivered, Cancelled}
+
+		for _, state := range states {
+			now := time.Now()
+
+			order := NewOrder("customer_id", now)
+			order.State = state
+
+			// Act
+			res := order.IsCompleted()
+
+			// Assert
+			assert.True(t, res)
+		}
+	})
+
+	t.Run("Should return false if the order is not completed", func(t *testing.T) {
+		// Arrange
+		states := []State{
+			None,
+			Created,
+			Received,
+			Processing,
+			Completed,
+		}
+
+		for _, state := range states {
+			now := time.Now()
+
+			order := NewOrder("customer_id", now)
+			order.State = state
+
+			// Act
+			res := order.IsCompleted()
+
+			// Assert
+			assert.False(t, res)
+		}
 	})
 }

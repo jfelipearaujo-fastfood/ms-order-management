@@ -9,7 +9,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	provider_mock "github.com/jfelipearaujo-org/ms-order-management/internal/provider/mocks"
 	repository_mock "github.com/jfelipearaujo-org/ms-order-management/internal/repository/mocks"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -134,7 +134,7 @@ func TestHandle(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrOrderAlreadyExists)
+		assert.ErrorIs(t, err, custom_error.ErrOrderAlreadyExists)
 		assert.Nil(t, resp)
 		repository.AssertExpectations(t)
 		timeProvider.AssertExpectations(t)

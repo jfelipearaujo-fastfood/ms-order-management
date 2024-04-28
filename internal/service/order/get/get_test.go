@@ -28,7 +28,7 @@ func TestHandle(t *testing.T) {
 		service := NewService(repository)
 
 		req := GetOrderDto{
-			UUID: id,
+			OrderId: id,
 		}
 
 		// Act
@@ -141,7 +141,7 @@ func TestHandle(t *testing.T) {
 		service := NewService(repository)
 
 		req := GetOrderDto{
-			UUID: id,
+			OrderId: id,
 		}
 
 		// Act

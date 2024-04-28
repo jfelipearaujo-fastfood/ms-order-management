@@ -2,17 +2,17 @@ package get
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_validator"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
 )
 
 type GetOrderDto struct {
-	UUID    string `param:"id" validate:"required_without=TrackId,uuid-when-not-empty"`        // api/v1/orders/:id
-	TrackId string `param:"track_id" validate:"required_without=UUID,track-id-when-not-empty"` // api/v1/orders/tracking/:track_id
+	OrderId string `param:"id" validate:"required_without=TrackId,uuid-when-not-empty"`
+	TrackId string `param:"track_id" validate:"required_without=OrderId,track-id-when-not-empty"`
 }
 
 func (dto *GetOrderDto) FindViaID() bool {
-	return dto.UUID != ""
+	return dto.OrderId != ""
 }
 
 func (dto *GetOrderDto) Validate() error {
@@ -23,7 +23,7 @@ func (dto *GetOrderDto) Validate() error {
 	}
 
 	if err := validator.Struct(dto); err != nil {
-		return errors.ErrRequestNotValid
+		return custom_error.ErrRequestNotValid
 	}
 
 	return nil

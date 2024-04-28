@@ -23,25 +23,32 @@ func NewService(
 	}
 }
 
-func (s *Service) Handle(ctx context.Context, request UpdateOrderDto) (*entity.Order, error) {
+func (s *Service) Handle(ctx context.Context, order *entity.Order, request UpdateOrderDto) error {
 	if err := request.Validate(); err != nil {
-		return nil, err
+		return err
 	}
 
-	order, err := s.repository.GetByID(ctx, request.UUID)
-	if err != nil {
-		return nil, err
+	if err := order.UpdateState(entity.State(request.State), s.timeProvider.GetTime()); err != nil {
+		return err
 	}
-
-	order.State = entity.State(request.State)
-	order.StateUpdatedAt = s.timeProvider.GetTime()
-	order.UpdatedAt = s.timeProvider.GetTime()
 
 	shouldUpdateItems := len(request.Items) > 0
 
-	if err := s.repository.Update(ctx, &order, shouldUpdateItems); err != nil {
-		return nil, err
+	if shouldUpdateItems {
+		for _, item := range request.Items {
+			itemToAdd := entity.NewItem(item.ItemId, item.UnitPrice, item.Quantity)
+
+			if err := order.AddItem(itemToAdd, s.timeProvider.GetTime()); err != nil {
+				return err
+			}
+		}
 	}
 
-	return &order, nil
+	if err := s.repository.Update(ctx, order, shouldUpdateItems); err != nil {
+		return err
+	}
+
+	order.RefreshStateTitle()
+
+	return nil
 }

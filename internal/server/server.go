@@ -7,11 +7,14 @@ import (
 
 	"github.com/jfelipearaujo-org/ms-order-management/internal/adapter/database"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/add_item"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/create"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/health"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/provider/time_provider"
 	order_repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository/order"
 	order_create_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
+	order_get_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
+	order_update_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/update"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -64,9 +67,13 @@ func (s *Server) registerOrderHandlers(e *echo.Group) {
 
 	// services
 	createOrderService := order_create_service.NewService(repository, timeProvider)
+	getOrderService := order_get_service.NewService(repository)
+	updateOrderService := order_update_service.NewService(repository, timeProvider)
 
 	// handlers
 	createOrderHandler := create.NewHandler(createOrderService)
+	addOrderItemHandler := add_item.NewHandler(getOrderService, updateOrderService)
 
 	e.POST("/orders", createOrderHandler.Handle)
+	e.POST("/orders/:id/items", addOrderItemHandler.Handle)
 }

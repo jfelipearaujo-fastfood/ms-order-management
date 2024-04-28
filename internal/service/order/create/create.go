@@ -7,7 +7,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/provider"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 )
 
 type Service struct {
@@ -42,7 +42,7 @@ func (s *Service) Handle(ctx context.Context, request CreateOrderDto) (*entity.O
 	}
 
 	if count > 0 {
-		return nil, errors.ErrOrderAlreadyExists
+		return nil, custom_error.ErrOrderAlreadyExists
 	}
 
 	order := entity.NewOrder(request.CustomerID, s.timeProvider.GetTime())

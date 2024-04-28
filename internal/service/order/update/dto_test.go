@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,8 +12,8 @@ func TestValidate(t *testing.T) {
 	t.Run("Should return nil when dto is valid without items", func(t *testing.T) {
 		// Arrange
 		dto := UpdateOrderDto{
-			UUID:  uuid.NewString(),
-			State: 1,
+			OrderId: uuid.NewString(),
+			State:   1,
 		}
 
 		// Act
@@ -26,11 +26,11 @@ func TestValidate(t *testing.T) {
 	t.Run("Should return nil when dto is valid with items", func(t *testing.T) {
 		// Arrange
 		dto := UpdateOrderDto{
-			UUID:  uuid.NewString(),
-			State: 1,
+			OrderId: uuid.NewString(),
+			State:   1,
 			Items: []UpdateOrderItemDto{
 				{
-					UUID:      uuid.NewString(),
+					ItemId:    uuid.NewString(),
 					UnitPrice: 10,
 					Quantity:  1,
 				},
@@ -53,6 +53,6 @@ func TestValidate(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrRequestNotValid)
+		assert.ErrorIs(t, err, custom_error.ErrRequestNotValid)
 	})
 }

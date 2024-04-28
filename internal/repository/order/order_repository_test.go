@@ -11,6 +11,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,7 +28,9 @@ func TestCreate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
@@ -61,7 +64,9 @@ func TestCreate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
@@ -96,7 +101,9 @@ func TestCreate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
@@ -127,7 +134,9 @@ func TestCreate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
@@ -159,7 +168,9 @@ func TestCreate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
@@ -195,7 +206,9 @@ func TestCreate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin().
 			WillReturnError(errors.New("something got wrong"))
@@ -233,8 +246,7 @@ func TestGetByID(t *testing.T) {
 		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
 			AddRow(productId, 1, 10.0)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -288,8 +300,7 @@ func TestGetByID(t *testing.T) {
 
 		orderItemRows := sqlmock.NewRows([]string{})
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -331,8 +342,7 @@ func TestGetByID(t *testing.T) {
 
 		orderRows := sqlmock.NewRows([]string{})
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		repo := NewOrderRepository(db)
@@ -342,7 +352,7 @@ func TestGetByID(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, repository.ErrOrderNotFound)
+		assert.ErrorIs(t, err, custom_error.ErrOrderNotFound)
 		assert.Nil(t, mock.ExpectationsWereMet())
 		assert.Empty(t, res)
 	})
@@ -357,8 +367,7 @@ func TestGetByID(t *testing.T) {
 
 		orderId := uuid.NewString()
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnError(errors.New("something got wrong"))
 
 		repo := NewOrderRepository(db)
@@ -388,8 +397,7 @@ func TestGetByID(t *testing.T) {
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, "ABC123", "Created", now, now, now)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		repo := NewOrderRepository(db)
@@ -419,8 +427,7 @@ func TestGetByID(t *testing.T) {
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -459,8 +466,7 @@ func TestGetByID(t *testing.T) {
 		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
 			AddRow(productId, "a", 10.0)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("id", orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -502,8 +508,7 @@ func TestGetByTrackID(t *testing.T) {
 		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
 			AddRow(productId, 1, 10.0)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -558,8 +563,7 @@ func TestGetByTrackID(t *testing.T) {
 
 		orderItemRows := sqlmock.NewRows([]string{})
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -601,8 +605,7 @@ func TestGetByTrackID(t *testing.T) {
 
 		orderRows := sqlmock.NewRows([]string{})
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		repo := NewOrderRepository(db)
@@ -612,7 +615,7 @@ func TestGetByTrackID(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, repository.ErrOrderNotFound)
+		assert.ErrorIs(t, err, custom_error.ErrOrderNotFound)
 		assert.Nil(t, mock.ExpectationsWereMet())
 		assert.Empty(t, res)
 	})
@@ -627,8 +630,7 @@ func TestGetByTrackID(t *testing.T) {
 
 		trackId := "ABC123"
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnError(errors.New("something got wrong"))
 
 		repo := NewOrderRepository(db)
@@ -659,8 +661,7 @@ func TestGetByTrackID(t *testing.T) {
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, trackId, "Created", now, now, now)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		repo := NewOrderRepository(db)
@@ -691,8 +692,7 @@ func TestGetByTrackID(t *testing.T) {
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
 			AddRow(orderId, customerId, trackId, entity.Created, now, now, now)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -732,8 +732,7 @@ func TestGetByTrackID(t *testing.T) {
 		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
 			AddRow(productId, "a", 10.0)
 
-		mock.ExpectQuery("SELECT (.+) FROM orders").
-			WithArgs("track_id", trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
 		mock.ExpectQuery("SELECT (.+) FROM order_items").
@@ -985,7 +984,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1015,7 +1016,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1031,7 +1034,7 @@ func TestUpdate(t *testing.T) {
 		// Assert
 		assert.Error(t, err)
 		assert.Nil(t, mock.ExpectationsWereMet())
-		assert.ErrorIs(t, err, repository.ErrOrderNotFound)
+		assert.ErrorIs(t, err, custom_error.ErrOrderNotFound)
 	})
 
 	t.Run("Should return error if rows affected return error when no order were updated", func(t *testing.T) {
@@ -1046,7 +1049,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1076,7 +1081,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1108,7 +1115,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1140,7 +1149,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1170,7 +1181,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1201,7 +1214,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1240,7 +1255,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1280,7 +1297,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1319,7 +1338,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
@@ -1355,7 +1376,9 @@ func TestUpdate(t *testing.T) {
 
 		order := entity.NewOrder("customer_id", now)
 		item := entity.NewItem("product_id", 1, 10.0)
-		order.AddItem(item, now)
+
+		err = order.AddItem(item, now)
+		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").

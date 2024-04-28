@@ -5,7 +5,7 @@ import (
 
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,21 +25,18 @@ func (h *Handler) Handle(ctx echo.Context) error {
 	var request create.CreateOrderDto
 
 	if err := ctx.Bind(&request); err != nil {
-		return errors.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
+		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
 	}
 
 	context := ctx.Request().Context()
 
 	order, err := h.service.Handle(context, request)
 	if err != nil {
-		if err == errors.ErrRequestNotValid {
-			return errors.NewHttpAppError(http.StatusUnprocessableEntity, "validation error", err)
-		}
-		if err == errors.ErrOrderAlreadyExists {
-			return errors.NewHttpAppError(http.StatusConflict, "order cannot be created", err)
+		if custom_error.IsBusinessErr(err) {
+			return custom_error.NewHttpAppErrorFromBusinessError(err)
 		}
 
-		return errors.NewHttpAppError(http.StatusInternalServerError, "internal server error", err)
+		return custom_error.NewHttpAppError(http.StatusInternalServerError, "internal server error", err)
 	}
 
 	return ctx.JSON(http.StatusCreated, order)

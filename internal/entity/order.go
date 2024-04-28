@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 )
 
 type Order struct {
@@ -13,6 +13,7 @@ type Order struct {
 	CustomerID     string    `json:"customer_id"`
 	TrackID        TrackID   `json:"track_id"`
 	State          State     `json:"state"`
+	StateTitle     string    `json:"state_title"`
 	StateUpdatedAt time.Time `json:"state_updated_at"`
 
 	TotalItems int     `json:"total_items"`
@@ -43,11 +44,19 @@ func NewOrder(customerID string, now time.Time) Order {
 	}
 }
 
-func (o *Order) AddItem(item Item, now time.Time) {
+func (o *Order) AddItem(item Item, now time.Time) error {
+	for _, i := range o.Items {
+		if i.UUID == item.UUID {
+			return custom_error.ErrOrderItemAlreadyExists
+		}
+	}
+
 	o.Items = append(o.Items, item)
 	o.UpdatedAt = now
 
 	o.calculateTotals()
+
+	return nil
 }
 
 func (o *Order) calculateTotals() {
@@ -61,13 +70,30 @@ func (o *Order) calculateTotals() {
 }
 
 func (o *Order) UpdateState(toState State, now time.Time) error {
+	if o.State == toState {
+		return nil
+	}
+
 	if !o.State.CanTransitionTo(toState) {
-		return errors.ErrInvalidStateTransition
+		return custom_error.ErrOrderInvalidStateTransition
 	}
 
 	o.State = toState
+	o.StateTitle = toState.String()
 	o.StateUpdatedAt = now
 	o.UpdatedAt = now
 
 	return nil
+}
+
+func (o *Order) RefreshStateTitle() {
+	o.StateTitle = o.State.String()
+}
+
+func (o *Order) CanAddItems() bool {
+	return o.State == Created
+}
+
+func (o *Order) IsCompleted() bool {
+	return o.State == Delivered || o.State == Cancelled
 }
