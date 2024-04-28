@@ -8,6 +8,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 )
 
 type OrderRepository struct {
@@ -83,11 +84,14 @@ func (r *OrderRepository) GetByTrackID(ctx context.Context, trackId string) (ent
 func (r *OrderRepository) getBy(ctx context.Context, column string, value string) (entity.Order, error) {
 	order := entity.Order{}
 
-	queryGetOrder := `
-		SELECT id, customer_id, track_id, state, state_updated_at, created_at, updated_at
-		FROM orders
-		WHERE $1 = $2;	
-	`
+	sql, params, err := goqu.
+		From("orders").
+		Select("id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at").
+		Where(goqu.Ex{column: value}).
+		ToSQL()
+	if err != nil {
+		return entity.Order{}, err
+	}
 
 	queryGetOrderItems := `
 		SELECT oi.product_id, oi.quantity, oi.price
@@ -96,7 +100,7 @@ func (r *OrderRepository) getBy(ctx context.Context, column string, value string
 		WHERE oi.order_id = $1 OR o.track_id = $1;
 	`
 
-	statement, err := r.conn.QueryContext(ctx, queryGetOrder, column, value)
+	statement, err := r.conn.QueryContext(ctx, sql, params...)
 	if err != nil {
 		return entity.Order{}, err
 	}
@@ -117,7 +121,7 @@ func (r *OrderRepository) getBy(ctx context.Context, column string, value string
 	}
 
 	if order.UUID == "" {
-		return entity.Order{}, repository.ErrOrderNotFound
+		return entity.Order{}, custom_error.ErrOrderNotFound
 	}
 
 	order.Items = []entity.Item{}
@@ -194,7 +198,6 @@ func (r *OrderRepository) GetAll(
 		Limit(uint(pagination.Size)).
 		Offset(uint(skip)).
 		ToSQL()
-
 	if err != nil {
 		return 0, nil, err
 	}
@@ -275,7 +278,7 @@ func (r *OrderRepository) Update(ctx context.Context, order *entity.Order, updat
 		if errTx != nil {
 			return errTx
 		}
-		return repository.ErrOrderNotFound
+		return custom_error.ErrOrderNotFound
 	}
 
 	if updateItems {

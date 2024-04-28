@@ -3,7 +3,7 @@ package get_all
 import (
 	"testing"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ func TestValidate(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrRequestNotValid)
+		assert.ErrorIs(t, err, custom_error.ErrRequestNotValid)
 	})
 
 	t.Run("Should return nil when state is valid", func(t *testing.T) {

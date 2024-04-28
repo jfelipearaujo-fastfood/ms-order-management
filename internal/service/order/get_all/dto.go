@@ -3,7 +3,7 @@ package get_all
 import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 )
 
 type GetOrdersDto struct {
@@ -18,5 +18,5 @@ func (dto *GetOrdersDto) Validate() error {
 		return nil
 	}
 
-	return errors.ErrRequestNotValid
+	return custom_error.ErrRequestNotValid
 }

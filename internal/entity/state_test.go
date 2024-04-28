@@ -78,3 +78,40 @@ func TestIsValidState(t *testing.T) {
 		assert.False(t, res)
 	})
 }
+
+func TestString(t *testing.T) {
+	t.Run("Should return the string representation of the state", func(t *testing.T) {
+		// Arrange
+		cases := []struct {
+			state    State
+			expected string
+		}{
+			{None, "None"},
+			{Created, "Created"},
+			{Received, "Received"},
+			{Processing, "Processing"},
+			{Completed, "Completed"},
+			{Delivered, "Delivered"},
+			{Cancelled, "Cancelled"},
+		}
+
+		for _, c := range cases {
+			// Act
+			res := c.state.String()
+
+			// Assert
+			assert.Equal(t, c.expected, res)
+		}
+	})
+
+	t.Run("Should return 'Unknown' when state is invalid", func(t *testing.T) {
+		// Arrange
+		state := State(99)
+
+		// Act
+		res := state.String()
+
+		// Assert
+		assert.Equal(t, "Unknown", res)
+	})
+}

@@ -11,7 +11,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/mocks"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -57,7 +57,7 @@ func TestHandle(t *testing.T) {
 		service := mocks.NewMockCreateOrderService[create.CreateOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(nil, errors.ErrRequestNotValid).
+			Return(nil, custom_error.ErrRequestNotValid).
 			Once()
 
 		reqBody := create.CreateOrderDto{
@@ -87,7 +87,7 @@ func TestHandle(t *testing.T) {
 		assert.True(t, ok)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, he.Code)
-		assert.Equal(t, errors.AppError{
+		assert.Equal(t, custom_error.AppError{
 			Code:    http.StatusUnprocessableEntity,
 			Message: "validation error",
 			Details: "request not valid, please check the fields",
@@ -101,7 +101,7 @@ func TestHandle(t *testing.T) {
 		service := mocks.NewMockCreateOrderService[create.CreateOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(nil, errors.ErrOrderAlreadyExists).
+			Return(nil, custom_error.ErrOrderAlreadyExists).
 			Once()
 
 		reqBody := create.CreateOrderDto{
@@ -131,9 +131,9 @@ func TestHandle(t *testing.T) {
 		assert.True(t, ok)
 
 		assert.Equal(t, http.StatusConflict, he.Code)
-		assert.Equal(t, errors.AppError{
+		assert.Equal(t, custom_error.AppError{
 			Code:    http.StatusConflict,
-			Message: "order cannot be created",
+			Message: "unable to create the order",
 			Details: "order already exists",
 		}, he.Message)
 
@@ -175,7 +175,7 @@ func TestHandle(t *testing.T) {
 		assert.True(t, ok)
 
 		assert.Equal(t, http.StatusInternalServerError, he.Code)
-		assert.Equal(t, errors.AppError{
+		assert.Equal(t, custom_error.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 			Details: "assert.AnError general error for testing",

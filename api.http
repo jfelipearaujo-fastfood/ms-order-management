@@ -11,3 +11,17 @@ Content-Type: application/json
 {
   "customer_id": "19b5408e-8ee2-47d4-953b-196d41f1e367"
 }
+
+### Add item to the order
+POST {{host}}/api/v1/orders/75c2a7f5-2dff-4cd5-b4e9-ffdeee1c27f9/items
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "id": "b88014db-320d-4ac9-99b1-422774d56105",
+      "unit_price": 10.5,
+      "quantity": 1
+    }
+  ]
+}

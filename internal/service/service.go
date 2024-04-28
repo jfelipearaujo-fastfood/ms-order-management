@@ -19,5 +19,5 @@ type GetOrdersService[T any] interface {
 }
 
 type UpdateOrderService[T any] interface {
-	Handle(ctx context.Context, request T) (*entity.Order, error)
+	Handle(ctx context.Context, order *entity.Order, request T) error
 }

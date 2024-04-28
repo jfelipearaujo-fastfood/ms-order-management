@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/errors"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +12,7 @@ func TestFindViaID(t *testing.T) {
 	t.Run("Should return true when UUID is not empty", func(t *testing.T) {
 		// Arrange
 		dto := GetOrderDto{
-			UUID: "valid-uuid",
+			OrderId: "valid-uuid",
 		}
 
 		// Act
@@ -38,7 +38,7 @@ func TestValidate(t *testing.T) {
 	t.Run("Should return nil when dto is valid with id", func(t *testing.T) {
 		// Arrange
 		dto := GetOrderDto{
-			UUID: uuid.NewString(),
+			OrderId: uuid.NewString(),
 		}
 
 		// Act
@@ -64,7 +64,7 @@ func TestValidate(t *testing.T) {
 	t.Run("Should return error when dto is invalid with id", func(t *testing.T) {
 		// Arrange
 		dto := GetOrderDto{
-			UUID: "invalid-uuid",
+			OrderId: "invalid-uuid",
 		}
 
 		// Act
@@ -72,7 +72,7 @@ func TestValidate(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrRequestNotValid)
+		assert.ErrorIs(t, err, custom_error.ErrRequestNotValid)
 	})
 
 	t.Run("Should return error when dto is invalid with trackId", func(t *testing.T) {
@@ -86,13 +86,13 @@ func TestValidate(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrRequestNotValid)
+		assert.ErrorIs(t, err, custom_error.ErrRequestNotValid)
 	})
 
 	t.Run("Should return error when dto is invalid with id and trackId", func(t *testing.T) {
 		// Arrange
 		dto := GetOrderDto{
-			UUID:    "invalid-uuid",
+			OrderId: "invalid-uuid",
 			TrackId: "invalid-track-id",
 		}
 
@@ -101,7 +101,7 @@ func TestValidate(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrRequestNotValid)
+		assert.ErrorIs(t, err, custom_error.ErrRequestNotValid)
 	})
 
 	t.Run("Should return error when dto is empty", func(t *testing.T) {
@@ -113,6 +113,6 @@ func TestValidate(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, errors.ErrRequestNotValid)
+		assert.ErrorIs(t, err, custom_error.ErrRequestNotValid)
 	})
 }

@@ -23,7 +23,7 @@ func (s *Service) Handle(ctx context.Context, request GetOrderDto) (entity.Order
 	}
 
 	if request.FindViaID() {
-		order, err := s.repository.GetByID(ctx, request.UUID)
+		order, err := s.repository.GetByID(ctx, request.OrderId)
 		if err != nil {
 			return entity.Order{}, err
 		}

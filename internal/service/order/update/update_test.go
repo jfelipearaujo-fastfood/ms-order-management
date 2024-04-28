@@ -23,31 +23,28 @@ func TestHandle(t *testing.T) {
 		repository := repository_mock.NewMockOrderRepository(t)
 		timeProvider := provider_mock.NewMockTimeProvider(t)
 
-		repository.On("GetByID", ctx, mock.Anything).
-			Return(entity.Order{}, nil).
-			Once()
-
 		repository.On("Update", ctx, mock.Anything, false).
 			Return(nil).
 			Once()
 
 		timeProvider.On("GetTime").
 			Return(now).
-			Times(2)
+			Once()
 
 		service := NewService(repository, timeProvider)
 
+		order := &entity.Order{}
+
 		req := UpdateOrderDto{
-			UUID:  uuid.NewString(),
-			State: 1,
+			OrderId: uuid.NewString(),
+			State:   1,
 		}
 
 		// Act
-		resp, err := service.Handle(ctx, req)
+		err := service.Handle(ctx, order, req)
 
 		// Assert
 		assert.NoError(t, err)
-		assert.NotNil(t, resp)
 		repository.AssertExpectations(t)
 		timeProvider.AssertExpectations(t)
 	})
@@ -61,10 +58,6 @@ func TestHandle(t *testing.T) {
 		repository := repository_mock.NewMockOrderRepository(t)
 		timeProvider := provider_mock.NewMockTimeProvider(t)
 
-		repository.On("GetByID", ctx, mock.Anything).
-			Return(entity.Order{}, nil).
-			Once()
-
 		repository.On("Update", ctx, mock.Anything, true).
 			Return(nil).
 			Once()
@@ -75,12 +68,14 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
+		order := &entity.Order{}
+
 		req := UpdateOrderDto{
-			UUID:  uuid.NewString(),
-			State: 1,
+			OrderId: uuid.NewString(),
+			State:   1,
 			Items: []UpdateOrderItemDto{
 				{
-					UUID:      uuid.NewString(),
+					ItemId:    uuid.NewString(),
 					UnitPrice: 10.0,
 					Quantity:  1,
 				},
@@ -88,11 +83,10 @@ func TestHandle(t *testing.T) {
 		}
 
 		// Act
-		resp, err := service.Handle(ctx, req)
+		err := service.Handle(ctx, order, req)
 
 		// Assert
 		assert.NoError(t, err)
-		assert.NotNil(t, resp)
 		repository.AssertExpectations(t)
 		timeProvider.AssertExpectations(t)
 	})
@@ -106,42 +100,15 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
+		order := &entity.Order{}
+
 		req := UpdateOrderDto{}
 
 		// Act
-		resp, err := service.Handle(ctx, req)
+		err := service.Handle(ctx, order, req)
 
 		// Assert
 		assert.Error(t, err)
-		assert.Nil(t, resp)
-		repository.AssertExpectations(t)
-		timeProvider.AssertExpectations(t)
-	})
-
-	t.Run("Should return error when try to find the order", func(t *testing.T) {
-		// Arrange
-		ctx := context.Background()
-
-		repository := repository_mock.NewMockOrderRepository(t)
-		timeProvider := provider_mock.NewMockTimeProvider(t)
-
-		repository.On("GetByID", ctx, mock.Anything).
-			Return(entity.Order{}, assert.AnError).
-			Once()
-
-		service := NewService(repository, timeProvider)
-
-		req := UpdateOrderDto{
-			UUID:  uuid.NewString(),
-			State: 1,
-		}
-
-		// Act
-		resp, err := service.Handle(ctx, req)
-
-		// Assert
-		assert.Error(t, err)
-		assert.Nil(t, resp)
 		repository.AssertExpectations(t)
 		timeProvider.AssertExpectations(t)
 	})
@@ -155,13 +122,73 @@ func TestHandle(t *testing.T) {
 		repository := repository_mock.NewMockOrderRepository(t)
 		timeProvider := provider_mock.NewMockTimeProvider(t)
 
-		repository.On("GetByID", ctx, mock.Anything).
-			Return(entity.Order{}, nil).
-			Once()
-
 		repository.On("Update", ctx, mock.Anything, false).
 			Return(assert.AnError).
 			Once()
+
+		timeProvider.On("GetTime").
+			Return(now).
+			Once()
+
+		service := NewService(repository, timeProvider)
+
+		order := &entity.Order{}
+
+		req := UpdateOrderDto{
+			OrderId: uuid.NewString(),
+			State:   1,
+		}
+
+		// Act
+		err := service.Handle(ctx, order, req)
+
+		// Assert
+		assert.Error(t, err)
+		repository.AssertExpectations(t)
+		timeProvider.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when cannot update the state", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+
+		now := time.Now()
+
+		repository := repository_mock.NewMockOrderRepository(t)
+		timeProvider := provider_mock.NewMockTimeProvider(t)
+
+		timeProvider.On("GetTime").
+			Return(now).
+			Once()
+
+		service := NewService(repository, timeProvider)
+
+		order := &entity.Order{
+			State: entity.Received,
+		}
+
+		req := UpdateOrderDto{
+			OrderId: uuid.NewString(),
+			State:   1,
+		}
+
+		// Act
+		err := service.Handle(ctx, order, req)
+
+		// Assert
+		assert.Error(t, err)
+		repository.AssertExpectations(t)
+		timeProvider.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when cannot add an item", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+
+		now := time.Now()
+
+		repository := repository_mock.NewMockOrderRepository(t)
+		timeProvider := provider_mock.NewMockTimeProvider(t)
 
 		timeProvider.On("GetTime").
 			Return(now).
@@ -169,17 +196,34 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
+		itemId := uuid.NewString()
+
+		order := &entity.Order{
+			State: entity.Created,
+			Items: []entity.Item{
+				{
+					UUID: itemId,
+				},
+			},
+		}
+
 		req := UpdateOrderDto{
-			UUID:  uuid.NewString(),
-			State: 1,
+			OrderId: uuid.NewString(),
+			State:   1,
+			Items: []UpdateOrderItemDto{
+				{
+					ItemId:    itemId,
+					UnitPrice: 10.0,
+					Quantity:  1,
+				},
+			},
 		}
 
 		// Act
-		resp, err := service.Handle(ctx, req)
+		err := service.Handle(ctx, order, req)
 
 		// Assert
 		assert.Error(t, err)
-		assert.Nil(t, resp)
 		repository.AssertExpectations(t)
 		timeProvider.AssertExpectations(t)
 	})

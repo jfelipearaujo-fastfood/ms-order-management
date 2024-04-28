@@ -14,34 +14,22 @@ type MockUpdateOrderService[T interface{}] struct {
 	mock.Mock
 }
 
-// Handle provides a mock function with given fields: ctx, request
-func (_m *MockUpdateOrderService[T]) Handle(ctx context.Context, request T) (*entity.Order, error) {
-	ret := _m.Called(ctx, request)
+// Handle provides a mock function with given fields: ctx, order, request
+func (_m *MockUpdateOrderService[T]) Handle(ctx context.Context, order *entity.Order, request T) error {
+	ret := _m.Called(ctx, order, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Handle")
 	}
 
-	var r0 *entity.Order
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, T) (*entity.Order, error)); ok {
-		return rf(ctx, request)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, T) *entity.Order); ok {
-		r0 = rf(ctx, request)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *entity.Order, T) error); ok {
+		r0 = rf(ctx, order, request)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entity.Order)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, T) error); ok {
-		r1 = rf(ctx, request)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // NewMockUpdateOrderService creates a new instance of MockUpdateOrderService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

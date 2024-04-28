@@ -31,6 +31,27 @@ func (s State) CanTransitionTo(to State) bool {
 	return false
 }
 
+func (s State) String() string {
+	switch s {
+	case None:
+		return "None"
+	case Created:
+		return "Created"
+	case Received:
+		return "Received"
+	case Processing:
+		return "Processing"
+	case Completed:
+		return "Completed"
+	case Delivered:
+		return "Delivered"
+	case Cancelled:
+		return "Cancelled"
+	default:
+		return "Unknown"
+	}
+}
+
 func IsValidState(s State) bool {
 	return s >= Created && s <= Cancelled
 }
