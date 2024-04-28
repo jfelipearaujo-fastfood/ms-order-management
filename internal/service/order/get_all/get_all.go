@@ -25,7 +25,9 @@ func (s *Service) Handle(ctx context.Context, request GetOrdersDto) (int, []enti
 	}
 
 	filter := repository.GetAllOrdersFilter{
-		State: entity.State(request.State),
+		CustomerID: request.CustomerID,
+		StateFrom:  entity.State(request.State),
+		StateTo:    entity.State(request.State),
 	}
 
 	count, orders, err := s.repository.GetAll(ctx, request.Pagination, filter)

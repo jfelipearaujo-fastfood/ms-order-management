@@ -12,7 +12,7 @@ func NewTrackID() TrackID {
 	letters := randomLetters(3)
 	numbers := randomNumbers(3)
 
-	return TrackID(fmt.Sprintf("%s%s", letters, numbers))
+	return TrackID(fmt.Sprintf("%s-%s", letters, numbers))
 }
 
 func NewTrackIDFrom(s string) TrackID {
@@ -31,12 +31,13 @@ func randomNumbers(n int) string {
 }
 
 func randomFromSet(set []rune, n int) string {
-	idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(set))))
-	if err != nil {
-		panic(err)
-	}
 	b := make([]rune, n)
 	for i := range b {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(set))))
+		if err != nil {
+			panic(err)
+		}
+
 		b[i] = set[idx.Int64()]
 	}
 	return string(b)

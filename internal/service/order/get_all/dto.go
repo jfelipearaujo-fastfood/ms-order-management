@@ -7,7 +7,8 @@ import (
 )
 
 type GetOrdersDto struct {
-	State int `query:"state"`
+	CustomerID string `query:"customer_id"`
+	State      int    `query:"state"`
 
 	common.Pagination
 }
