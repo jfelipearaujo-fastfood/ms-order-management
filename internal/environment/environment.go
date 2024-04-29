@@ -14,9 +14,21 @@ type DatabaseConfig struct {
 	Url string `env:"URL, required"`
 }
 
+type CloudConfig struct {
+	OrderPaymentTopicName string `env:"ORDER_PAYMENT_TOPIC_NAME, required"`
+	UpdateOrderQueueName  string `env:"UPDATE_ORDER_QUEUE_NAME, required"`
+
+	BaseEndpoint string `env:"BASE_ENDPOINT"`
+}
+
+func (c *CloudConfig) IsBaseEndpointSet() bool {
+	return c.BaseEndpoint != ""
+}
+
 type Config struct {
-	ApiConfig *ApiConfig      `env:",prefix=API_"`
-	DbConfig  *DatabaseConfig `env:",prefix=DB_"`
+	ApiConfig   *ApiConfig      `env:",prefix=API_"`
+	DbConfig    *DatabaseConfig `env:",prefix=DB_"`
+	CloudConfig *CloudConfig    `env:",prefix=AWS_"`
 }
 
 type Environment interface {

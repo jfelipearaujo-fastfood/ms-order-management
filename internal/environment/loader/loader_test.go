@@ -17,6 +17,9 @@ func cleanEnv() {
 
 	os.Unsetenv("DB_NAME")
 	os.Unsetenv("DB_URL")
+
+	os.Unsetenv("AWS_ORDER_PAYMENT_TOPIC_NAME")
+	os.Unsetenv("AWS_UPDATE_ORDER_QUEUE_NAME")
 }
 
 func TestGetEnvironment(t *testing.T) {
@@ -29,6 +32,9 @@ func TestGetEnvironment(t *testing.T) {
 		t.Setenv("DB_NAME", "test")
 		t.Setenv("DB_URL", "db://host:1234")
 
+		t.Setenv("AWS_ORDER_PAYMENT_TOPIC_NAME", "order_payment")
+		t.Setenv("AWS_UPDATE_ORDER_QUEUE_NAME", "update_order")
+
 		expected := &environment.Config{
 			ApiConfig: &environment.ApiConfig{
 				Port:       8080,
@@ -37,6 +43,10 @@ func TestGetEnvironment(t *testing.T) {
 			},
 			DbConfig: &environment.DatabaseConfig{
 				Url: "db://host:1234",
+			},
+			CloudConfig: &environment.CloudConfig{
+				OrderPaymentTopicName: "order_payment",
+				UpdateOrderQueueName:  "update_order",
 			},
 		}
 
@@ -79,6 +89,10 @@ func TestGetEnvironmentFromFile(t *testing.T) {
 			},
 			DbConfig: &environment.DatabaseConfig{
 				Url: "db://host:1234",
+			},
+			CloudConfig: &environment.CloudConfig{
+				OrderPaymentTopicName: "order_payment",
+				UpdateOrderQueueName:  "update_order",
 			},
 		}
 

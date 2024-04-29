@@ -45,9 +45,16 @@ func main() {
 
 	server := server.NewServer(config)
 
+	if err := server.Topic.UpdateTopicArn(ctx); err != nil {
+		slog.Error("error updating topic arn", "error", err)
+		panic(err)
+	}
+
+	httpServer := server.GetHttpServer()
+
 	go func() {
-		slog.Info("🚀 Server started", "address", server.Addr)
-		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		slog.Info("🚀 Server started", "address", httpServer.Addr)
+		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("http server error", "error", err)
 			panic(err)
 		}
@@ -61,7 +68,7 @@ func main() {
 	ctx, shutdown := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdown()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := httpServer.Shutdown(ctx); err != nil {
 		slog.Error("error while trying to shutdown the server", "error", err)
 	}
 	slog.Info("graceful shutdown completed ✅")

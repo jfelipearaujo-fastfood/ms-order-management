@@ -1,10 +1,15 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+
+	"github.com/jfelipearaujo-org/ms-order-management/internal/adapter/cloud"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/adapter/database"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/handler/add_item"
@@ -21,19 +26,34 @@ import (
 )
 
 type Server struct {
-	Config *environment.Config
-	db     database.DatabaseService
+	Config   *environment.Config
+	Database database.DatabaseService
+	Topic    cloud.TopicService
 }
 
-func NewServer(config *environment.Config) *http.Server {
-	server := &Server{
-		Config: config,
-		db:     database.NewDatabase(config),
+func NewServer(config *environment.Config) *Server {
+	ctx := context.Background()
+
+	cloudConfig, err := awsConfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err)
 	}
 
+	if config.CloudConfig.IsBaseEndpointSet() {
+		cloudConfig.BaseEndpoint = aws.String(config.CloudConfig.BaseEndpoint)
+	}
+
+	return &Server{
+		Config:   config,
+		Database: database.NewDatabase(config),
+		Topic:    cloud.NewService(config.CloudConfig.OrderPaymentTopicName, cloudConfig),
+	}
+}
+
+func (s *Server) GetHttpServer() *http.Server {
 	return &http.Server{
-		Addr:         fmt.Sprintf(":%d", server.Config.ApiConfig.Port),
-		Handler:      server.RegisterRoutes(),
+		Addr:         fmt.Sprintf(":%d", s.Config.ApiConfig.Port),
+		Handler:      s.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -54,7 +74,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (server *Server) registerHealthCheck(e *echo.Echo) {
-	healthHandler := health.NewHandler(server.db)
+	healthHandler := health.NewHandler(server.Database)
 
 	e.GET("/health", healthHandler.Handle)
 }
@@ -64,7 +84,7 @@ func (s *Server) registerOrderHandlers(e *echo.Group) {
 	timeProvider := time_provider.NewTimeProvider(time.Now)
 
 	// repositories
-	repository := order_repository.NewOrderRepository(s.db.GetInstance())
+	repository := order_repository.NewOrderRepository(s.Database.GetInstance())
 
 	// services
 	createOrderService := order_create_service.NewService(repository, timeProvider)

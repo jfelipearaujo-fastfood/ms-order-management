@@ -17,6 +17,10 @@ func TestNewServer(t *testing.T) {
 			DbConfig: &environment.DatabaseConfig{
 				Url: "postgres://host:1234",
 			},
+			CloudConfig: &environment.CloudConfig{
+				OrderPaymentTopicName: "order-payment-topic",
+				UpdateOrderQueueName:  "update-order-queue",
+			},
 		}
 
 		// Act
@@ -24,6 +28,28 @@ func TestNewServer(t *testing.T) {
 
 		// Assert
 		assert.NotNil(t, server)
-		assert.Equal(t, ":8080", server.Addr)
+	})
+
+	t.Run("Should return a new server with base endpoint", func(t *testing.T) {
+		// Arrange
+		config := &environment.Config{
+			ApiConfig: &environment.ApiConfig{
+				Port: 8080,
+			},
+			DbConfig: &environment.DatabaseConfig{
+				Url: "postgres://host:1234",
+			},
+			CloudConfig: &environment.CloudConfig{
+				OrderPaymentTopicName: "order-payment-topic",
+				UpdateOrderQueueName:  "update-order-queue",
+				BaseEndpoint:          "http://localhost:8080",
+			},
+		}
+
+		// Act
+		server := NewServer(config)
+
+		// Assert
+		assert.NotNil(t, server)
 	})
 }
