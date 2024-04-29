@@ -21,3 +21,9 @@ type GetOrdersService[T any] interface {
 type UpdateOrderService[T any] interface {
 	Handle(ctx context.Context, order *entity.Order, request T) error
 }
+
+// ---
+
+type SendToPayService[T any] interface {
+	Handle(ctx context.Context, request T) error
+}

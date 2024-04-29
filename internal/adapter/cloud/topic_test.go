@@ -13,6 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGetTopicName(t *testing.T) {
+	t.Run("Should return topic name", func(t *testing.T) {
+		// Arrange
+		service := NewService("test-topic", aws.Config{})
+
+		// Act
+		topicName := service.GetTopicName()
+
+		// Assert
+		assert.Equal(t, "test-topic", topicName)
+	})
+}
+
 func TestUpdateTopicArn(t *testing.T) {
 	t.Run("Should return nil when topic is found", func(t *testing.T) {
 		// Arrange

@@ -11,6 +11,7 @@ import (
 )
 
 type TopicService interface {
+	GetTopicName() string
 	UpdateTopicArn(ctx context.Context) error
 	PublishMessage(ctx context.Context, message interface{}) (*string, error)
 }
@@ -28,6 +29,10 @@ func NewService(topicName string, config aws.Config) TopicService {
 		TopicName: topicName,
 		Client:    client,
 	}
+}
+
+func (s *Service) GetTopicName() string {
+	return s.TopicName
 }
 
 func (s *Service) UpdateTopicArn(ctx context.Context) error {

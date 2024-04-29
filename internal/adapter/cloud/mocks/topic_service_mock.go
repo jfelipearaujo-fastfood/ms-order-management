@@ -13,6 +13,24 @@ type MockTopicService struct {
 	mock.Mock
 }
 
+// GetTopicName provides a mock function with given fields:
+func (_m *MockTopicService) GetTopicName() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTopicName")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // PublishMessage provides a mock function with given fields: ctx, message
 func (_m *MockTopicService) PublishMessage(ctx context.Context, message interface{}) (*string, error) {
 	ret := _m.Called(ctx, message)
