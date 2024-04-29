@@ -3,7 +3,7 @@ package get_all
 import (
 	"context"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 )
 
@@ -17,7 +17,7 @@ func NewService(repository repository.OrderRepository) *Service {
 	}
 }
 
-func (s *Service) Handle(ctx context.Context, request GetOrdersDto) (int, []entity.Order, error) {
+func (s *Service) Handle(ctx context.Context, request GetOrdersDto) (int, []order_entity.Order, error) {
 	request.SetDefaults()
 
 	if err := request.Validate(); err != nil {
@@ -26,8 +26,8 @@ func (s *Service) Handle(ctx context.Context, request GetOrdersDto) (int, []enti
 
 	filter := repository.GetAllOrdersFilter{
 		CustomerID: request.CustomerID,
-		StateFrom:  entity.State(request.State),
-		StateTo:    entity.State(request.State),
+		StateFrom:  order_entity.OrderState(request.State),
+		StateTo:    order_entity.OrderState(request.State),
 	}
 
 	count, orders, err := s.repository.GetAll(ctx, request.Pagination, filter)

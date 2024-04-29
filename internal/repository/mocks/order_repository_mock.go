@@ -7,9 +7,9 @@ import (
 
 	common "github.com/jfelipearaujo-org/ms-order-management/internal/common"
 
-	entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity"
-
 	mock "github.com/stretchr/testify/mock"
+
+	order_entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 
 	repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 )
@@ -20,7 +20,7 @@ type MockOrderRepository struct {
 }
 
 // Create provides a mock function with given fields: ctx, order
-func (_m *MockOrderRepository) Create(ctx context.Context, order *entity.Order) error {
+func (_m *MockOrderRepository) Create(ctx context.Context, order *order_entity.Order) error {
 	ret := _m.Called(ctx, order)
 
 	if len(ret) == 0 {
@@ -28,7 +28,7 @@ func (_m *MockOrderRepository) Create(ctx context.Context, order *entity.Order) 
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entity.Order) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *order_entity.Order) error); ok {
 		r0 = rf(ctx, order)
 	} else {
 		r0 = ret.Error(0)
@@ -38,7 +38,7 @@ func (_m *MockOrderRepository) Create(ctx context.Context, order *entity.Order) 
 }
 
 // GetAll provides a mock function with given fields: ctx, pagination, filter
-func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pagination, filter repository.GetAllOrdersFilter) (int, []entity.Order, error) {
+func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pagination, filter repository.GetAllOrdersFilter) (int, []order_entity.Order, error) {
 	ret := _m.Called(ctx, pagination, filter)
 
 	if len(ret) == 0 {
@@ -46,9 +46,9 @@ func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pag
 	}
 
 	var r0 int
-	var r1 []entity.Order
+	var r1 []order_entity.Order
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) (int, []entity.Order, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) (int, []order_entity.Order, error)); ok {
 		return rf(ctx, pagination, filter)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) int); ok {
@@ -57,11 +57,11 @@ func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pag
 		r0 = ret.Get(0).(int)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) []entity.Order); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, common.Pagination, repository.GetAllOrdersFilter) []order_entity.Order); ok {
 		r1 = rf(ctx, pagination, filter)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]entity.Order)
+			r1 = ret.Get(1).([]order_entity.Order)
 		}
 	}
 
@@ -75,22 +75,22 @@ func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pag
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *MockOrderRepository) GetByID(ctx context.Context, id string) (entity.Order, error) {
+func (_m *MockOrderRepository) GetByID(ctx context.Context, id string) (order_entity.Order, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByID")
 	}
 
-	var r0 entity.Order
+	var r0 order_entity.Order
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.Order, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (order_entity.Order, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) entity.Order); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) order_entity.Order); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(entity.Order)
+		r0 = ret.Get(0).(order_entity.Order)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -103,22 +103,22 @@ func (_m *MockOrderRepository) GetByID(ctx context.Context, id string) (entity.O
 }
 
 // GetByTrackID provides a mock function with given fields: ctx, trackId
-func (_m *MockOrderRepository) GetByTrackID(ctx context.Context, trackId string) (entity.Order, error) {
+func (_m *MockOrderRepository) GetByTrackID(ctx context.Context, trackId string) (order_entity.Order, error) {
 	ret := _m.Called(ctx, trackId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByTrackID")
 	}
 
-	var r0 entity.Order
+	var r0 order_entity.Order
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.Order, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (order_entity.Order, error)); ok {
 		return rf(ctx, trackId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) entity.Order); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) order_entity.Order); ok {
 		r0 = rf(ctx, trackId)
 	} else {
-		r0 = ret.Get(0).(entity.Order)
+		r0 = ret.Get(0).(order_entity.Order)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -131,7 +131,7 @@ func (_m *MockOrderRepository) GetByTrackID(ctx context.Context, trackId string)
 }
 
 // Update provides a mock function with given fields: ctx, order, updateItems
-func (_m *MockOrderRepository) Update(ctx context.Context, order *entity.Order, updateItems bool) error {
+func (_m *MockOrderRepository) Update(ctx context.Context, order *order_entity.Order, updateItems bool) error {
 	ret := _m.Called(ctx, order, updateItems)
 
 	if len(ret) == 0 {
@@ -139,7 +139,7 @@ func (_m *MockOrderRepository) Update(ctx context.Context, order *entity.Order, 
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entity.Order, bool) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *order_entity.Order, bool) error); ok {
 		r0 = rf(ctx, order, updateItems)
 	} else {
 		r0 = ret.Error(0)

@@ -12,5 +12,8 @@ var (
 	ErrOrderInProgress             BusinessError = New(http.StatusBadRequest, "unable to update/insert information to the order", "order is in progress")
 	ErrOrderAlreadyCompleted       BusinessError = New(http.StatusBadRequest, "unable to update/insert information to the order", "order is already completed or cancelled")
 
+	ErrOrderHasNoItems         BusinessError = New(http.StatusBadRequest, "operation not allowed", "order has no items")
+	ErrOrderHasOnGoingPayments BusinessError = New(http.StatusBadRequest, "operation not allowed", "order has on going payments or is already paid")
+
 	ErrTopicNotFound BusinessError = New(http.StatusNotFound, "unable to find the topic", "topic not found")
 )

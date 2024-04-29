@@ -3,7 +3,7 @@ package update
 import (
 	"context"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/provider"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 )
@@ -23,12 +23,12 @@ func NewService(
 	}
 }
 
-func (s *Service) Handle(ctx context.Context, order *entity.Order, request UpdateOrderDto) error {
+func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request UpdateOrderDto) error {
 	if err := request.Validate(); err != nil {
 		return err
 	}
 
-	if err := order.UpdateState(entity.State(request.State), s.timeProvider.GetTime()); err != nil {
+	if err := order.UpdateState(order_entity.OrderState(request.State), s.timeProvider.GetTime()); err != nil {
 		return err
 	}
 
@@ -36,7 +36,7 @@ func (s *Service) Handle(ctx context.Context, order *entity.Order, request Updat
 
 	if shouldUpdateItems {
 		for _, item := range request.Items {
-			itemToAdd := entity.NewItem(item.ItemId, item.UnitPrice, item.Quantity)
+			itemToAdd := order_entity.NewItem(item.ItemId, item.UnitPrice, item.Quantity)
 
 			if err := order.AddItem(itemToAdd, s.timeProvider.GetTime()); err != nil {
 				return err

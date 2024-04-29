@@ -1,4 +1,4 @@
-package entity
+package order_entity
 
 import (
 	"crypto/rand"
@@ -6,17 +6,17 @@ import (
 	"math/big"
 )
 
-type TrackID string
+type TrackId string
 
-func NewTrackID() TrackID {
+func NewTrackId() TrackId {
 	letters := randomLetters(3)
 	numbers := randomNumbers(3)
 
-	return TrackID(fmt.Sprintf("%s-%s", letters, numbers))
+	return TrackId(fmt.Sprintf("%s-%s", letters, numbers))
 }
 
-func NewTrackIDFrom(s string) TrackID {
-	return TrackID(s)
+func NewTrackIdFrom(s string) TrackId {
+	return TrackId(s)
 }
 
 var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")

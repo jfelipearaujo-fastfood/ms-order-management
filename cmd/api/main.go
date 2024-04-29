@@ -45,7 +45,7 @@ func main() {
 
 	server := server.NewServer(config)
 
-	if err := server.Topic.UpdateTopicArn(ctx); err != nil {
+	if err := server.TopicService.UpdateTopicArn(ctx); err != nil {
 		slog.Error("error updating topic arn", "error", err)
 		panic(err)
 	}

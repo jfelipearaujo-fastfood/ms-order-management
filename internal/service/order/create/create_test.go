@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	provider_mock "github.com/jfelipearaujo-org/ms-order-management/internal/provider/mocks"
 	repository_mock "github.com/jfelipearaujo-org/ms-order-management/internal/repository/mocks"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
@@ -23,7 +23,7 @@ func TestHandle(t *testing.T) {
 		now := time.Now()
 
 		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
-			Return(0, []entity.Order{}, nil).
+			Return(0, []order_entity.Order{}, nil).
 			Once()
 
 		repository.On("Create", mock.Anything, mock.Anything).
@@ -83,7 +83,7 @@ func TestHandle(t *testing.T) {
 		now := time.Now()
 
 		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
-			Return(0, []entity.Order{}, nil).
+			Return(0, []order_entity.Order{}, nil).
 			Once()
 
 		repository.On("Create", mock.Anything, mock.Anything).
@@ -118,7 +118,7 @@ func TestHandle(t *testing.T) {
 		timeProvider := provider_mock.NewMockTimeProvider(t)
 
 		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
-			Return(1, []entity.Order{}, nil).
+			Return(1, []order_entity.Order{}, nil).
 			Once()
 
 		service := NewService(repository, timeProvider)
@@ -146,7 +146,7 @@ func TestHandle(t *testing.T) {
 		timeProvider := provider_mock.NewMockTimeProvider(t)
 
 		repository.On("GetAll", mock.Anything, mock.Anything, mock.Anything).
-			Return(0, []entity.Order{}, assert.AnError).
+			Return(0, []order_entity.Order{}, assert.AnError).
 			Once()
 
 		service := NewService(repository, timeProvider)

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/mocks"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
@@ -23,7 +23,7 @@ func TestHandle(t *testing.T) {
 		service := mocks.NewMockCreateOrderService[create.CreateOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(&entity.Order{}, nil).
+			Return(&order_entity.Order{}, nil).
 			Once()
 
 		reqBody := create.CreateOrderDto{

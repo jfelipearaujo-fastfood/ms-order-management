@@ -16,3 +16,14 @@ CREATE TABLE IF NOT EXISTS order_items (
     price DECIMAL(10, 2),
     PRIMARY KEY (order_id, product_id)
 );
+
+CREATE TABLE IF NOT EXISTS order_payments (
+    order_id varchar(255),
+    payment_id varchar(255),
+    total_items int,
+    amount DECIMAL(10, 2),
+    state int,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    PRIMARY KEY (order_id, payment_id)
+);

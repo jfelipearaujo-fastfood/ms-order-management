@@ -1,25 +1,28 @@
-package entity
+package order_entity
 
 import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/payment_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 )
 
 type Order struct {
-	UUID string `json:"id"`
+	Id string `json:"id"`
 
-	CustomerID     string    `json:"customer_id"`
-	TrackID        TrackID   `json:"track_id"`
-	State          State     `json:"state"`
-	StateTitle     string    `json:"state_title"`
-	StateUpdatedAt time.Time `json:"state_updated_at"`
+	CustomerId     string     `json:"customer_id"`
+	TrackId        TrackId    `json:"track_id"`
+	State          OrderState `json:"state"`
+	StateTitle     string     `json:"state_title"`
+	StateUpdatedAt time.Time  `json:"state_updated_at"`
 
 	TotalItems int     `json:"total_items"`
 	TotalPrice float64 `json:"total_price"`
 
 	Items []Item `json:"items"`
+
+	Payments []payment_entity.Payment `json:"payments"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -27,10 +30,10 @@ type Order struct {
 
 func NewOrder(customerID string, now time.Time) Order {
 	return Order{
-		UUID: uuid.NewString(),
+		Id: uuid.NewString(),
 
-		CustomerID:     customerID,
-		TrackID:        NewTrackID(),
+		CustomerId:     customerID,
+		TrackId:        NewTrackId(),
 		State:          Created,
 		StateUpdatedAt: now,
 
@@ -46,7 +49,7 @@ func NewOrder(customerID string, now time.Time) Order {
 
 func (o *Order) AddItem(item Item, now time.Time) error {
 	for _, i := range o.Items {
-		if i.UUID == item.UUID {
+		if i.Id == item.Id {
 			return custom_error.ErrOrderItemAlreadyExists
 		}
 	}
@@ -54,12 +57,12 @@ func (o *Order) AddItem(item Item, now time.Time) error {
 	o.Items = append(o.Items, item)
 	o.UpdatedAt = now
 
-	o.calculateTotals()
+	o.CalculateTotals()
 
 	return nil
 }
 
-func (o *Order) calculateTotals() {
+func (o *Order) CalculateTotals() {
 	o.TotalItems = 0
 	o.TotalPrice = 0
 
@@ -69,7 +72,7 @@ func (o *Order) calculateTotals() {
 	}
 }
 
-func (o *Order) UpdateState(toState State, now time.Time) error {
+func (o *Order) UpdateState(toState OrderState, now time.Time) error {
 	if o.State == toState {
 		return nil
 	}
@@ -96,4 +99,23 @@ func (o *Order) CanAddItems() bool {
 
 func (o *Order) IsCompleted() bool {
 	return o.State == Delivered || o.State == Cancelled
+}
+
+func (o *Order) HasItems() bool {
+	return len(o.Items) > 0
+}
+
+func (o *Order) HasOnGoingPayments() bool {
+	validStates := []payment_entity.PaymentState{
+		payment_entity.WaitingForApproval,
+		payment_entity.Approved,
+	}
+
+	for _, payment := range o.Payments {
+		if payment.IsInState(validStates...) {
+			return true
+		}
+	}
+
+	return false
 }

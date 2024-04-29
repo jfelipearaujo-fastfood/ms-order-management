@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/provider"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
@@ -25,15 +25,15 @@ func NewService(
 	}
 }
 
-func (s *Service) Handle(ctx context.Context, request CreateOrderDto) (*entity.Order, error) {
+func (s *Service) Handle(ctx context.Context, request CreateOrderDto) (*order_entity.Order, error) {
 	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
 	filter := repository.GetAllOrdersFilter{
 		CustomerID: request.CustomerID,
-		StateFrom:  entity.Created,
-		StateTo:    entity.Delivered,
+		StateFrom:  order_entity.Created,
+		StateTo:    order_entity.Delivered,
 	}
 
 	count, _, err := s.repository.GetAll(ctx, common.Pagination{}, filter)
@@ -45,7 +45,7 @@ func (s *Service) Handle(ctx context.Context, request CreateOrderDto) (*entity.O
 		return nil, custom_error.ErrOrderAlreadyExists
 	}
 
-	order := entity.NewOrder(request.CustomerID, s.timeProvider.GetTime())
+	order := order_entity.NewOrder(request.CustomerID, s.timeProvider.GetTime())
 
 	if err := s.repository.Create(ctx, &order); err != nil {
 		return nil, err

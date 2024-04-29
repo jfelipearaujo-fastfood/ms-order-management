@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,8 +20,8 @@ func TestHandle(t *testing.T) {
 		repository := mocks.NewMockOrderRepository(t)
 
 		repository.On("GetByID", ctx, id).
-			Return(entity.Order{
-				UUID: id,
+			Return(order_entity.Order{
+				Id: id,
 			}, nil).
 			Once()
 
@@ -49,8 +49,8 @@ func TestHandle(t *testing.T) {
 		repository := mocks.NewMockOrderRepository(t)
 
 		repository.On("GetByTrackID", ctx, trackId).
-			Return(entity.Order{
-				TrackID: entity.NewTrackIDFrom(trackId),
+			Return(order_entity.Order{
+				TrackId: order_entity.NewTrackIdFrom(trackId),
 			}, nil).
 			Once()
 
@@ -135,7 +135,7 @@ func TestHandle(t *testing.T) {
 		repository := mocks.NewMockOrderRepository(t)
 
 		repository.On("GetByID", ctx, id).
-			Return(entity.Order{}, assert.AnError).
+			Return(order_entity.Order{}, assert.AnError).
 			Once()
 
 		service := NewService(repository)
@@ -162,7 +162,7 @@ func TestHandle(t *testing.T) {
 		repository := mocks.NewMockOrderRepository(t)
 
 		repository.On("GetByTrackID", ctx, trackId).
-			Return(entity.Order{}, assert.AnError).
+			Return(order_entity.Order{}, assert.AnError).
 			Once()
 
 		service := NewService(repository)

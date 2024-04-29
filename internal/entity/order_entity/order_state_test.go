@@ -1,4 +1,4 @@
-package entity
+package order_entity
 
 import (
 	"testing"
@@ -10,8 +10,8 @@ func TestCanTransitionTo(t *testing.T) {
 	t.Run("Should return true when transition is allowed", func(t *testing.T) {
 		// Arrange
 		cases := []struct {
-			from State
-			to   State
+			from OrderState
+			to   OrderState
 		}{
 			{None, Created},
 			{Created, Received},
@@ -35,8 +35,8 @@ func TestCanTransitionTo(t *testing.T) {
 	t.Run("Should return false when transition is not allowed", func(t *testing.T) {
 		// Arrange
 		cases := []struct {
-			from State
-			to   State
+			from OrderState
+			to   OrderState
 		}{
 			{None, Received},
 			{Created, Processing},
@@ -69,7 +69,7 @@ func TestIsValidState(t *testing.T) {
 
 	t.Run("Should return false when state is invalid", func(t *testing.T) {
 		// Arrange
-		state := State(0)
+		state := OrderState(0)
 
 		// Act
 		res := IsValidState(state)
@@ -83,7 +83,7 @@ func TestString(t *testing.T) {
 	t.Run("Should return the string representation of the state", func(t *testing.T) {
 		// Arrange
 		cases := []struct {
-			state    State
+			state    OrderState
 			expected string
 		}{
 			{None, "None"},
@@ -106,7 +106,7 @@ func TestString(t *testing.T) {
 
 	t.Run("Should return 'Unknown' when state is invalid", func(t *testing.T) {
 		// Arrange
-		state := State(99)
+		state := OrderState(99)
 
 		// Act
 		res := state.String()

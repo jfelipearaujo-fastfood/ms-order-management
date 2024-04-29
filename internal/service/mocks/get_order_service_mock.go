@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	order_entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -15,22 +15,22 @@ type MockGetOrderService[T interface{}] struct {
 }
 
 // Handle provides a mock function with given fields: ctx, request
-func (_m *MockGetOrderService[T]) Handle(ctx context.Context, request T) (entity.Order, error) {
+func (_m *MockGetOrderService[T]) Handle(ctx context.Context, request T) (order_entity.Order, error) {
 	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Handle")
 	}
 
-	var r0 entity.Order
+	var r0 order_entity.Order
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, T) (entity.Order, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, T) (order_entity.Order, error)); ok {
 		return rf(ctx, request)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, T) entity.Order); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, T) order_entity.Order); ok {
 		r0 = rf(ctx, request)
 	} else {
-		r0 = ret.Get(0).(entity.Order)
+		r0 = ret.Get(0).(order_entity.Order)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, T) error); ok {
