@@ -67,12 +67,25 @@ run: ## Run the application
 	@if test ! -f .env; then \
 		make env; \
 	fi
-	@./build/main;
+	go run -race -ldflags="-s -w" cmd/api/main.go
 
 ##@ Testing
 test: ## Test the application
-	@echo "Testing..."
-	@go test -race -count=1 ./internal/... -coverprofile=coverage.out
+	@if command -v gcc > /dev/null; then \
+		echo "Testing..."; \
+		go test -race -count=1 ./internal/... -coverprofile=coverage.out \
+	else \
+		read -p "gcc is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+		if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+			sudo apt install build-essential; \
+			echo "Testing..."; \
+			go test -race -count=1 ./internal/... -coverprofile=coverage.out \
+		else \
+			echo "You chose not to intall gcc. Exiting..."; \
+			exit 1; \
+		fi; \
+	fi
+		
 
 cover: ## View the coverage
 	@echo "Analyzing coverage..."
