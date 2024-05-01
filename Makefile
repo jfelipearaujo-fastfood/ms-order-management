@@ -7,7 +7,7 @@ help:  ## Display this help
 ##@ CI/CD
 build: ## Build the application to the output folder (default: ./buil/main)
 	@echo "Building..."	
-	@go build -o build/main cmd/api/main.go
+	@go build -ldflags="-s -w" -o build/main cmd/api/main.go
 
 build-docker: ## Build a container image and add the version and latest tag
 	@if command -v docker > /dev/null 2>&1 && docker-buildx version > /dev/null 2>&1; then \
@@ -62,30 +62,28 @@ lint: ## Go Linter
 	fi
 
 ##@ Runner
-run: ## Run the application
-	make build
+run: build docker-up ## Run the application
 	@if test ! -f .env; then \
 		make env; \
-	fi
-	go run -race -ldflags="-s -w" cmd/api/main.go
+	fi; \
+	go run -race -ldflags="-s -w" cmd/api/main.go local
 
 ##@ Testing
 test: ## Test the application
 	@if command -v gcc > /dev/null; then \
 		echo "Testing..."; \
-		go test -race -count=1 ./internal/... -coverprofile=coverage.out \
+		go test -race -ldflags="-s -w" -count=1 ./internal/... -coverprofile=coverage.out; \
 	else \
 		read -p "gcc is not installed on your machine. Do you want to install it? [Y/n] " choice; \
 		if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
 			sudo apt install build-essential; \
 			echo "Testing..."; \
-			go test -race -count=1 ./internal/... -coverprofile=coverage.out \
+			go test -race -ldflags="-s -w" -count=1 ./internal/... -coverprofile=coverage.out; \
 		else \
 			echo "You chose not to intall gcc. Exiting..."; \
 			exit 1; \
 		fi; \
 	fi
-		
 
 cover: ## View the coverage
 	@echo "Analyzing coverage..."
@@ -135,11 +133,7 @@ docker-down: ## Shutdown containers
 		docker-compose down; \
 	fi
 
-watch: ## Live reload using air
-	@if test ! -f .env; then \
-		make env; \
-	fi
-
+watch: env docker-up ## Live reload using air
 	@if command -v air > /dev/null; then \
 	    air; \
 	    echo "Watching...";\
