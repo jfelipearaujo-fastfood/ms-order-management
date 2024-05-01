@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/mocks"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
@@ -21,7 +21,7 @@ func TestHandleGetById(t *testing.T) {
 		service := mocks.NewMockGetOrderService[get.GetOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, nil).
+			Return(order_entity.Order{}, nil).
 			Once()
 
 		req := httptest.NewRequest(echo.GET, "/", nil)
@@ -51,7 +51,7 @@ func TestHandleGetById(t *testing.T) {
 		service := mocks.NewMockGetOrderService[get.GetOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, custom_error.ErrOrderNotFound).
+			Return(order_entity.Order{}, custom_error.ErrOrderNotFound).
 			Once()
 
 		req := httptest.NewRequest(echo.GET, "/", nil)
@@ -90,7 +90,7 @@ func TestHandleGetById(t *testing.T) {
 		service := mocks.NewMockGetOrderService[get.GetOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, assert.AnError).
+			Return(order_entity.Order{}, assert.AnError).
 			Once()
 
 		req := httptest.NewRequest(echo.GET, "/", nil)
@@ -131,7 +131,7 @@ func TestHandleGetByTrackId(t *testing.T) {
 		service := mocks.NewMockGetOrderService[get.GetOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, nil).
+			Return(order_entity.Order{}, nil).
 			Once()
 
 		req := httptest.NewRequest(echo.GET, "/", nil)
@@ -161,7 +161,7 @@ func TestHandleGetByTrackId(t *testing.T) {
 		service := mocks.NewMockGetOrderService[get.GetOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, custom_error.ErrOrderNotFound).
+			Return(order_entity.Order{}, custom_error.ErrOrderNotFound).
 			Once()
 
 		req := httptest.NewRequest(echo.GET, "/", nil)
@@ -200,7 +200,7 @@ func TestHandleGetByTrackId(t *testing.T) {
 		service := mocks.NewMockGetOrderService[get.GetOrderDto](t)
 
 		service.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, assert.AnError).
+			Return(order_entity.Order{}, assert.AnError).
 			Once()
 
 		req := httptest.NewRequest(echo.GET, "/", nil)

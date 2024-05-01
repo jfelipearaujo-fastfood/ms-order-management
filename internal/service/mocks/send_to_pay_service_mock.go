@@ -5,6 +5,7 @@ package mocks
 import (
 	context "context"
 
+	order_entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -13,17 +14,17 @@ type MockSendToPayService[T interface{}] struct {
 	mock.Mock
 }
 
-// Handle provides a mock function with given fields: ctx, request
-func (_m *MockSendToPayService[T]) Handle(ctx context.Context, request T) error {
-	ret := _m.Called(ctx, request)
+// Handle provides a mock function with given fields: ctx, order, request
+func (_m *MockSendToPayService[T]) Handle(ctx context.Context, order *order_entity.Order, request T) error {
+	ret := _m.Called(ctx, order, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Handle")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, T) error); ok {
-		r0 = rf(ctx, request)
+	if rf, ok := ret.Get(0).(func(context.Context, *order_entity.Order, T) error); ok {
+		r0 = rf(ctx, order, request)
 	} else {
 		r0 = ret.Error(0)
 	}

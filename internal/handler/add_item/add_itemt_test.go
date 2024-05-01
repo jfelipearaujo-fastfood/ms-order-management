@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/payment_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/mocks"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/update"
@@ -25,8 +26,8 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{
-				State: entity.Created,
+			Return(order_entity.Order{
+				State: order_entity.Created,
 			}, nil).
 			Once()
 
@@ -76,7 +77,7 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, custom_error.ErrOrderNotFound).
+			Return(order_entity.Order{}, custom_error.ErrOrderNotFound).
 			Once()
 
 		reqBody := update.UpdateOrderDto{
@@ -131,7 +132,7 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{}, assert.AnError).
+			Return(order_entity.Order{}, assert.AnError).
 			Once()
 
 		reqBody := update.UpdateOrderDto{
@@ -186,8 +187,8 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{
-				State: entity.Delivered,
+			Return(order_entity.Order{
+				State: order_entity.Delivered,
 			}, nil).
 			Once()
 
@@ -243,8 +244,8 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{
-				State: entity.Received,
+			Return(order_entity.Order{
+				State: order_entity.Received,
 			}, nil).
 			Once()
 
@@ -300,8 +301,8 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{
-				State: entity.Created,
+			Return(order_entity.Order{
+				State: order_entity.Created,
 			}, nil).
 			Once()
 
@@ -361,8 +362,8 @@ func TestHandle(t *testing.T) {
 		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
 
 		getService.On("Handle", mock.Anything, mock.Anything).
-			Return(entity.Order{
-				State: entity.Created,
+			Return(order_entity.Order{
+				State: order_entity.Created,
 			}, nil).
 			Once()
 
@@ -410,6 +411,68 @@ func TestHandle(t *testing.T) {
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 			Details: "assert.AnError general error for testing",
+		}, he.Message)
+
+		getService.AssertExpectations(t)
+		updateService.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when order has on going payments", func(t *testing.T) {
+		// Arrange
+		getService := mocks.NewMockGetOrderService[get.GetOrderDto](t)
+		updateService := mocks.NewMockUpdateOrderService[update.UpdateOrderDto](t)
+
+		getService.On("Handle", mock.Anything, mock.Anything).
+			Return(order_entity.Order{
+				State: order_entity.Created,
+				Payments: []payment_entity.Payment{
+					{
+						State: payment_entity.WaitingForApproval,
+					},
+				},
+			}, nil).
+			Once()
+
+		reqBody := update.UpdateOrderDto{
+			Items: []update.UpdateOrderItemDto{
+				{
+					ItemId:    uuid.NewString(),
+					UnitPrice: 1.23,
+					Quantity:  1,
+				},
+			},
+		}
+
+		body, err := json.Marshal(reqBody)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest(echo.POST, "/", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		resp := httptest.NewRecorder()
+
+		e := echo.New()
+		ctx := e.NewContext(req, resp)
+		ctx.SetPath("/orders/:id/items")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues(uuid.NewString())
+
+		handler := NewHandler(getService, updateService)
+
+		// Act
+		err = handler.Handle(ctx)
+
+		// Assert
+		assert.Error(t, err)
+
+		he, ok := err.(*echo.HTTPError)
+		assert.True(t, ok)
+
+		assert.Equal(t, http.StatusBadRequest, he.Code)
+		assert.Equal(t, custom_error.AppError{
+			Code:    http.StatusBadRequest,
+			Message: "operation not allowed",
+			Details: "order has on going payments or is already paid",
 		}, he.Message)
 
 		getService.AssertExpectations(t)

@@ -9,7 +9,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/common"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/payment_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
@@ -26,19 +27,19 @@ func TestCreate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
-			WithArgs(order.UUID, order.CustomerID, order.TrackID, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
+			WithArgs(order.Id, order.CustomerId, order.TrackId, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("INSERT INTO order_items").
-			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WithArgs(order.Id, item.Id, item.Quantity, item.UnitPrice).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
 
@@ -62,19 +63,19 @@ func TestCreate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
-			WithArgs(order.UUID, order.CustomerID, order.TrackID, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
+			WithArgs(order.Id, order.CustomerId, order.TrackId, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("INSERT INTO order_items").
-			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WithArgs(order.Id, item.Id, item.Quantity, item.UnitPrice).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback()
@@ -99,15 +100,15 @@ func TestCreate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
-			WithArgs(order.UUID, order.CustomerID, order.TrackID, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
+			WithArgs(order.Id, order.CustomerId, order.TrackId, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback()
@@ -132,15 +133,15 @@ func TestCreate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
-			WithArgs(order.UUID, order.CustomerID, order.TrackID, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
+			WithArgs(order.Id, order.CustomerId, order.TrackId, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback().
@@ -166,19 +167,19 @@ func TestCreate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("INSERT INTO orders").
-			WithArgs(order.UUID, order.CustomerID, order.TrackID, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
+			WithArgs(order.Id, order.CustomerId, order.TrackId, order.State, order.StateUpdatedAt, order.CreatedAt, order.UpdatedAt).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("INSERT INTO order_items").
-			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WithArgs(order.Id, item.Id, item.Quantity, item.UnitPrice).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback().
@@ -204,8 +205,8 @@ func TestCreate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
@@ -237,33 +238,51 @@ func TestGetByID(t *testing.T) {
 
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
+			AddRow(orderId, customerId, "ABC123", order_entity.Created, now, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(orderRows)
+
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
 
 		productId := uuid.NewString()
 
 		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
 			AddRow(productId, 1, 10.0)
 
-		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
-			WillReturnRows(orderRows)
-
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(orderId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
 			WillReturnRows(orderItemRows)
 
-		expected := entity.Order{
-			UUID:           orderId,
-			CustomerID:     customerId,
-			TrackID:        "ABC123",
-			State:          entity.Created,
+		expected := order_entity.Order{
+			Id:             orderId,
+			CustomerId:     customerId,
+			TrackId:        "ABC123",
+			State:          order_entity.Created,
 			StateUpdatedAt: now,
-			Items: []entity.Item{
+			Items: []order_entity.Item{
 				{
-					UUID:      productId,
+					Id:        productId,
 					Quantity:  1,
 					UnitPrice: 10.0,
+				},
+			},
+			Payments: []payment_entity.Payment{
+				{
+					OrderId:    orderId,
+					PaymentId:  paymentId,
+					TotalItems: 1,
+					Amount:     10.5,
+					State:      payment_entity.WaitingForApproval,
+					StateTitle: "WaitingForApproval",
+					CreatedAt:  now,
+					UpdatedAt:  now,
 				},
 			},
 			CreatedAt: now,
@@ -294,28 +313,46 @@ func TestGetByID(t *testing.T) {
 
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
-
-		orderItemRows := sqlmock.NewRows([]string{})
+			AddRow(orderId, customerId, "ABC123", order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(orderId).
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
+
+		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"})
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
 			WillReturnRows(orderItemRows)
 
-		expected := entity.Order{
-			UUID:           orderId,
-			CustomerID:     customerId,
-			TrackID:        "ABC123",
-			State:          entity.Created,
+		expected := order_entity.Order{
+			Id:             orderId,
+			CustomerId:     customerId,
+			TrackId:        "ABC123",
+			State:          order_entity.Created,
 			StateUpdatedAt: now,
-			Items:          []entity.Item{},
-			CreatedAt:      now,
-			UpdatedAt:      now,
+			Items:          []order_entity.Item{},
+			Payments: []payment_entity.Payment{
+				{
+					OrderId:    orderId,
+					PaymentId:  paymentId,
+					TotalItems: 1,
+					Amount:     10.5,
+					State:      payment_entity.WaitingForApproval,
+					StateTitle: "WaitingForApproval",
+					CreatedAt:  now,
+					UpdatedAt:  now,
+				},
+			},
+			CreatedAt: now,
+			UpdatedAt: now,
 		}
 
 		repo := NewOrderRepository(db)
@@ -423,16 +460,22 @@ func TestGetByID(t *testing.T) {
 
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
+			AddRow(orderId, customerId, "ABC123", order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(orderId).
-			WillReturnError(errors.New("something got wrong"))
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
+			WillReturnError(assert.AnError)
 
 		repo := NewOrderRepository(db)
 
@@ -457,20 +500,26 @@ func TestGetByID(t *testing.T) {
 
 		orderId := uuid.NewString()
 		customerId := uuid.NewString()
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
-
-		productId := uuid.NewString()
-
-		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
-			AddRow(productId, "a", 10.0)
+			AddRow(orderId, customerId, "ABC123", order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(orderId).
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
+
+		productId := uuid.NewString()
+
+		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
+			AddRow(productId, "abc", 10.0)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
 			WillReturnRows(orderItemRows)
 
 		repo := NewOrderRepository(db)
@@ -497,35 +546,53 @@ func TestGetByTrackID(t *testing.T) {
 		now := time.Now()
 
 		orderId := uuid.NewString()
+		trackId := "ABC-123"
 		customerId := uuid.NewString()
-		trackId := "ABC123"
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, trackId, entity.Created, now, now, now)
+			AddRow(orderId, customerId, trackId, order_entity.Created, now, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
+			WillReturnRows(orderRows)
+
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
 
 		productId := uuid.NewString()
 
 		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
 			AddRow(productId, 1, 10.0)
 
-		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
-			WillReturnRows(orderRows)
-
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(trackId).
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
 			WillReturnRows(orderItemRows)
 
-		expected := entity.Order{
-			UUID:           orderId,
-			CustomerID:     customerId,
-			TrackID:        entity.NewTrackIDFrom(trackId),
-			State:          entity.Created,
+		expected := order_entity.Order{
+			Id:             orderId,
+			CustomerId:     customerId,
+			TrackId:        order_entity.NewTrackIdFrom(trackId),
+			State:          order_entity.Created,
 			StateUpdatedAt: now,
-			Items: []entity.Item{
+			Items: []order_entity.Item{
 				{
-					UUID:      productId,
+					Id:        productId,
 					Quantity:  1,
 					UnitPrice: 10.0,
+				},
+			},
+			Payments: []payment_entity.Payment{
+				{
+					OrderId:    orderId,
+					PaymentId:  paymentId,
+					TotalItems: 1,
+					Amount:     10.5,
+					State:      payment_entity.WaitingForApproval,
+					StateTitle: "WaitingForApproval",
+					CreatedAt:  now,
+					UpdatedAt:  now,
 				},
 			},
 			CreatedAt: now,
@@ -555,30 +622,48 @@ func TestGetByTrackID(t *testing.T) {
 		now := time.Now()
 
 		orderId := uuid.NewString()
+		trackId := "ABC-123"
 		customerId := uuid.NewString()
-		trackId := "ABC123"
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, trackId, entity.Created, now, now, now)
-
-		orderItemRows := sqlmock.NewRows([]string{})
+			AddRow(orderId, customerId, trackId, order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(trackId).
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
+
+		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"})
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
 			WillReturnRows(orderItemRows)
 
-		expected := entity.Order{
-			UUID:           orderId,
-			CustomerID:     customerId,
-			TrackID:        entity.NewTrackIDFrom(trackId),
-			State:          entity.Created,
+		expected := order_entity.Order{
+			Id:             orderId,
+			CustomerId:     customerId,
+			TrackId:        order_entity.NewTrackIdFrom(trackId),
+			State:          order_entity.Created,
 			StateUpdatedAt: now,
-			Items:          []entity.Item{},
-			CreatedAt:      now,
-			UpdatedAt:      now,
+			Items:          []order_entity.Item{},
+			Payments: []payment_entity.Payment{
+				{
+					OrderId:    orderId,
+					PaymentId:  paymentId,
+					TotalItems: 1,
+					Amount:     10.5,
+					State:      payment_entity.WaitingForApproval,
+					StateTitle: "WaitingForApproval",
+					CreatedAt:  now,
+					UpdatedAt:  now,
+				},
+			},
+			CreatedAt: now,
+			UpdatedAt: now,
 		}
 
 		repo := NewOrderRepository(db)
@@ -601,9 +686,9 @@ func TestGetByTrackID(t *testing.T) {
 
 		ctx := context.Background()
 
-		trackId := "ABC123"
+		trackId := "ABC-123"
 
-		orderRows := sqlmock.NewRows([]string{})
+		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"})
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
@@ -686,18 +771,24 @@ func TestGetByTrackID(t *testing.T) {
 		now := time.Now()
 
 		orderId := uuid.NewString()
+		trackId := "ABC-123"
 		customerId := uuid.NewString()
-		trackId := "ABC123"
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, trackId, entity.Created, now, now, now)
+			AddRow(orderId, customerId, trackId, order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(trackId).
-			WillReturnError(errors.New("something got wrong"))
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
+			WillReturnError(assert.AnError)
 
 		repo := NewOrderRepository(db)
 
@@ -721,22 +812,28 @@ func TestGetByTrackID(t *testing.T) {
 		now := time.Now()
 
 		orderId := uuid.NewString()
+		trackId := "ABC-123"
 		customerId := uuid.NewString()
-		trackId := "ABC123"
+		paymentId := uuid.NewString()
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, trackId, entity.Created, now, now, now)
-
-		productId := uuid.NewString()
-
-		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
-			AddRow(productId, "a", 10.0)
+			AddRow(orderId, customerId, trackId, order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)?").
 			WillReturnRows(orderRows)
 
-		mock.ExpectQuery("SELECT (.+) FROM order_items").
-			WithArgs(trackId).
+		paymentRows := sqlmock.NewRows([]string{"order_id", "payment_id", "total_items", "amount", "state", "created_at", "updated_at"}).
+			AddRow(orderId, paymentId, 1, 10.5, payment_entity.WaitingForApproval, now, now)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_payments(.+)?").
+			WillReturnRows(paymentRows)
+
+		productId := uuid.NewString()
+
+		orderItemRows := sqlmock.NewRows([]string{"product_id", "quantity", "price"}).
+			AddRow(productId, "abc", 10.0)
+
+		mock.ExpectQuery("SELECT (.+) FROM (.+)?order_items(.+)?").
 			WillReturnRows(orderItemRows)
 
 		repo := NewOrderRepository(db)
@@ -769,7 +866,7 @@ func TestGetAll(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
+			AddRow(orderId, customerId, "ABC123", order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
 			WillReturnRows(orderRows)
@@ -870,7 +967,7 @@ func TestGetAll(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
 		orderRows := sqlmock.NewRows([]string{"id", "customer_id", "track_id", "state", "state_updated_at", "created_at", "updated_at"}).
-			AddRow(orderId, customerId, "ABC123", entity.Created, now, now, now)
+			AddRow(orderId, customerId, "ABC123", order_entity.Created, now, now, now)
 
 		mock.ExpectQuery("SELECT (.+) FROM (.+)?orders(.+)? ORDER BY (.+)").
 			WillReturnRows(orderRows)
@@ -883,7 +980,7 @@ func TestGetAll(t *testing.T) {
 		}
 
 		filter := repository.GetAllOrdersFilter{
-			StateFrom: entity.Created,
+			StateFrom: order_entity.Created,
 		}
 
 		// Act
@@ -982,15 +1079,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
 
@@ -1014,15 +1111,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		mock.ExpectRollback()
 
@@ -1047,15 +1144,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewErrorResult(errors.New("something got wrong")))
 		mock.ExpectRollback()
 
@@ -1079,15 +1176,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewErrorResult(errors.New("something got wrong")))
 
 		mock.ExpectRollback().
@@ -1113,15 +1210,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 
 		mock.ExpectRollback().
@@ -1147,15 +1244,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnError(errors.New("something got wrong"))
 		mock.ExpectRollback()
 
@@ -1179,15 +1276,15 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnError(errors.New("something got wrong"))
 		mock.ExpectRollback().
 			WillReturnError(errors.New("something got wrong"))
@@ -1212,23 +1309,23 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("DELETE FROM order_items").
-			WithArgs(order.UUID).
+			WithArgs(order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("INSERT INTO order_items").
-			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WithArgs(order.Id, item.Id, item.Quantity, item.UnitPrice).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectCommit()
@@ -1253,23 +1350,23 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("DELETE FROM order_items").
-			WithArgs(order.UUID).
+			WithArgs(order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("INSERT INTO order_items").
-			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WithArgs(order.Id, item.Id, item.Quantity, item.UnitPrice).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback().
@@ -1295,23 +1392,23 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("DELETE FROM order_items").
-			WithArgs(order.UUID).
+			WithArgs(order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("INSERT INTO order_items").
-			WithArgs(order.UUID, item.UUID, item.Quantity, item.UnitPrice).
+			WithArgs(order.Id, item.Id, item.Quantity, item.UnitPrice).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback()
@@ -1336,19 +1433,19 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("DELETE FROM order_items").
-			WithArgs(order.UUID).
+			WithArgs(order.Id).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback().
@@ -1374,19 +1471,19 @@ func TestUpdate(t *testing.T) {
 
 		now := time.Now()
 
-		order := entity.NewOrder("customer_id", now)
-		item := entity.NewItem("product_id", 1, 10.0)
+		order := order_entity.NewOrder("customer_id", now)
+		item := order_entity.NewItem("product_id", 1, 10.0)
 
 		err = order.AddItem(item, now)
 		assert.NoError(t, err)
 
 		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE orders").
-			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.UUID).
+			WithArgs(order.State, order.StateUpdatedAt, order.UpdatedAt, order.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		mock.ExpectExec("DELETE FROM order_items").
-			WithArgs(order.UUID).
+			WithArgs(order.Id).
 			WillReturnError(errors.New("something got wrong"))
 
 		mock.ExpectRollback()

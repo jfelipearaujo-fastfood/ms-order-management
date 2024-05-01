@@ -1,32 +1,32 @@
-package add_item
+package payment
 
 import (
 	"net/http"
 
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/update"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/service/payment/send_to_pay"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/labstack/echo/v4"
 )
 
 type Handler struct {
-	getService    service.GetOrderService[get.GetOrderDto]
-	updateService service.UpdateOrderService[update.UpdateOrderDto]
+	sendToPayService service.SendToPayService[send_to_pay.SendToPayDto]
+	getOrderService  service.GetOrderService[get.GetOrderDto]
 }
 
 func NewHandler(
-	getService service.GetOrderService[get.GetOrderDto],
-	updateService service.UpdateOrderService[update.UpdateOrderDto],
+	sendToPayService service.SendToPayService[send_to_pay.SendToPayDto],
+	getOrderService service.GetOrderService[get.GetOrderDto],
 ) *Handler {
 	return &Handler{
-		getService:    getService,
-		updateService: updateService,
+		sendToPayService: sendToPayService,
+		getOrderService:  getOrderService,
 	}
 }
 
 func (h *Handler) Handle(ctx echo.Context) error {
-	var request update.UpdateOrderDto
+	var request send_to_pay.SendToPayDto
 
 	if err := ctx.Bind(&request); err != nil {
 		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
@@ -35,10 +35,10 @@ func (h *Handler) Handle(ctx echo.Context) error {
 	context := ctx.Request().Context()
 
 	getOrderRequest := get.GetOrderDto{
-		OrderId: request.OrderId,
+		OrderId: request.OrderID,
 	}
 
-	order, err := h.getService.Handle(context, getOrderRequest)
+	order, err := h.getOrderService.Handle(context, getOrderRequest)
 	if err != nil {
 		if custom_error.IsBusinessErr(err) {
 			return custom_error.NewHttpAppErrorFromBusinessError(err)
@@ -47,21 +47,15 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppError(http.StatusInternalServerError, "internal server error", err)
 	}
 
-	if order.IsCompleted() {
-		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderAlreadyCompleted)
-	}
-
-	if len(request.Items) > 0 && !order.CanAddItems() {
-		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderInProgress)
+	if !order.HasItems() {
+		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasNoItems)
 	}
 
 	if order.HasOnGoingPayments() {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasOnGoingPayments)
 	}
 
-	request.State = int(order.State)
-
-	if err := h.updateService.Handle(context, &order, request); err != nil {
+	if err := h.sendToPayService.Handle(context, &order, request); err != nil {
 		if custom_error.IsBusinessErr(err) {
 			return custom_error.NewHttpAppErrorFromBusinessError(err)
 		}
@@ -69,5 +63,9 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppError(http.StatusInternalServerError, "internal server error", err)
 	}
 
-	return ctx.JSON(http.StatusOK, order)
+	ok := map[string]string{
+		"message": "payment sent to be paid",
+	}
+
+	return ctx.JSON(http.StatusCreated, ok)
 }

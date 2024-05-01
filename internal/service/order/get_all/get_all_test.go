@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -18,7 +18,7 @@ func TestHandle(t *testing.T) {
 		repository := mocks.NewMockOrderRepository(t)
 
 		repository.On("GetAll", ctx, mock.Anything, mock.Anything).
-			Return(1, []entity.Order{{}}, nil).
+			Return(1, []order_entity.Order{{}}, nil).
 			Once()
 
 		service := NewService(repository)

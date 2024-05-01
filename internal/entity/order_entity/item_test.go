@@ -1,4 +1,4 @@
-package entity
+package order_entity
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ func TestNewItem(t *testing.T) {
 	t.Run("Should create a new item", func(t *testing.T) {
 		// Arrange
 		expect := Item{
-			UUID:      "1",
+			Id:        "1",
 			UnitPrice: 10.0,
 			Quantity:  2,
 		}

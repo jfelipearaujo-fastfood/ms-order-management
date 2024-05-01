@@ -3,7 +3,7 @@ package get
 import (
 	"context"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/repository"
 )
 
@@ -17,15 +17,15 @@ func NewService(repository repository.OrderRepository) *Service {
 	}
 }
 
-func (s *Service) Handle(ctx context.Context, request GetOrderDto) (entity.Order, error) {
+func (s *Service) Handle(ctx context.Context, request GetOrderDto) (order_entity.Order, error) {
 	if err := request.Validate(); err != nil {
-		return entity.Order{}, err
+		return order_entity.Order{}, err
 	}
 
 	if request.FindViaID() {
 		order, err := s.repository.GetByID(ctx, request.OrderId)
 		if err != nil {
-			return entity.Order{}, err
+			return order_entity.Order{}, err
 		}
 
 		return order, nil
@@ -33,7 +33,7 @@ func (s *Service) Handle(ctx context.Context, request GetOrderDto) (entity.Order
 
 	order, err := s.repository.GetByTrackID(ctx, request.TrackId)
 	if err != nil {
-		return entity.Order{}, err
+		return order_entity.Order{}, err
 	}
 
 	return order, nil

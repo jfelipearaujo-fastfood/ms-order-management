@@ -3,27 +3,27 @@ package service
 import (
 	"context"
 
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 )
 
 type CreateOrderService[T any] interface {
-	Handle(ctx context.Context, request T) (*entity.Order, error)
+	Handle(ctx context.Context, request T) (*order_entity.Order, error)
 }
 
 type GetOrderService[T any] interface {
-	Handle(ctx context.Context, request T) (entity.Order, error)
+	Handle(ctx context.Context, request T) (order_entity.Order, error)
 }
 
 type GetOrdersService[T any] interface {
-	Handle(ctx context.Context, request T) (int, []entity.Order, error)
+	Handle(ctx context.Context, request T) (int, []order_entity.Order, error)
 }
 
 type UpdateOrderService[T any] interface {
-	Handle(ctx context.Context, order *entity.Order, request T) error
+	Handle(ctx context.Context, order *order_entity.Order, request T) error
 }
 
 // ---
 
 type SendToPayService[T any] interface {
-	Handle(ctx context.Context, request T) error
+	Handle(ctx context.Context, order *order_entity.Order, request T) error
 }

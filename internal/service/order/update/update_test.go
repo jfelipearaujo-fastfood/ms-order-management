@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	provider_mock "github.com/jfelipearaujo-org/ms-order-management/internal/provider/mocks"
 	repository_mock "github.com/jfelipearaujo-org/ms-order-management/internal/repository/mocks"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +33,7 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
-		order := &entity.Order{}
+		order := &order_entity.Order{}
 
 		req := UpdateOrderDto{
 			OrderId: uuid.NewString(),
@@ -68,7 +68,7 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
-		order := &entity.Order{}
+		order := &order_entity.Order{}
 
 		req := UpdateOrderDto{
 			OrderId: uuid.NewString(),
@@ -100,7 +100,7 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
-		order := &entity.Order{}
+		order := &order_entity.Order{}
 
 		req := UpdateOrderDto{}
 
@@ -132,7 +132,7 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
-		order := &entity.Order{}
+		order := &order_entity.Order{}
 
 		req := UpdateOrderDto{
 			OrderId: uuid.NewString(),
@@ -163,8 +163,8 @@ func TestHandle(t *testing.T) {
 
 		service := NewService(repository, timeProvider)
 
-		order := &entity.Order{
-			State: entity.Received,
+		order := &order_entity.Order{
+			State: order_entity.Received,
 		}
 
 		req := UpdateOrderDto{
@@ -198,11 +198,11 @@ func TestHandle(t *testing.T) {
 
 		itemId := uuid.NewString()
 
-		order := &entity.Order{
-			State: entity.Created,
-			Items: []entity.Item{
+		order := &order_entity.Order{
+			State: order_entity.Created,
+			Items: []order_entity.Item{
 				{
-					UUID: itemId,
+					Id: itemId,
 				},
 			},
 		}

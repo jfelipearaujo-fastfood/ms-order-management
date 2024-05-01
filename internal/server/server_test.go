@@ -52,4 +52,29 @@ func TestNewServer(t *testing.T) {
 		// Assert
 		assert.NotNil(t, server)
 	})
+
+	t.Run("Should create a http server", func(t *testing.T) {
+		// Arrange
+		config := &environment.Config{
+			ApiConfig: &environment.ApiConfig{
+				Port: 8080,
+			},
+			DbConfig: &environment.DatabaseConfig{
+				Url: "postgres://host:1234",
+			},
+			CloudConfig: &environment.CloudConfig{
+				OrderPaymentTopicName: "order-payment-topic",
+				UpdateOrderQueueName:  "update-order-queue",
+			},
+		}
+
+		server := NewServer(config)
+
+		// Act
+		httpServer := server.GetHttpServer()
+
+		// Assert
+		assert.NotNil(t, httpServer)
+		assert.Equal(t, ":8080", httpServer.Addr)
+	})
 }

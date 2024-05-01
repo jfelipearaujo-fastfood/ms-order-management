@@ -1,9 +1,11 @@
-package entity
+package order_entity
 
 import (
 	"testing"
 	"time"
 
+	"github.com/jfelipearaujo-org/ms-order-management/internal/entity/payment_entity"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,9 +18,9 @@ func TestNewOrder(t *testing.T) {
 		res := NewOrder("customer_id", now)
 
 		// Assert
-		assert.NotEmpty(t, res.UUID)
-		assert.Equal(t, "customer_id", res.CustomerID)
-		assert.NotEmpty(t, res.TrackID)
+		assert.NotEmpty(t, res.Id)
+		assert.Equal(t, "customer_id", res.CustomerId)
+		assert.NotEmpty(t, res.TrackId)
 		assert.Equal(t, Created, res.State)
 		assert.Equal(t, now, res.StateUpdatedAt)
 		assert.Equal(t, 0, res.TotalItems)
@@ -33,7 +35,7 @@ func TestNewOrder(t *testing.T) {
 		now := time.Now()
 
 		expectedItem := Item{
-			UUID:      "item_id",
+			Id:        "item_id",
 			UnitPrice: 1.23,
 			Quantity:  1,
 		}
@@ -64,7 +66,7 @@ func TestNewOrder(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Act
-		order.calculateTotals()
+		order.CalculateTotals()
 
 		// Assert
 		assert.Equal(t, 3, order.TotalItems)
@@ -161,7 +163,7 @@ func TestNewOrder(t *testing.T) {
 
 	t.Run("Should return true if the order is already completed", func(t *testing.T) {
 		// Arrange
-		states := []State{Delivered, Cancelled}
+		states := []OrderState{Delivered, Cancelled}
 
 		for _, state := range states {
 			now := time.Now()
@@ -179,7 +181,7 @@ func TestNewOrder(t *testing.T) {
 
 	t.Run("Should return false if the order is not completed", func(t *testing.T) {
 		// Arrange
-		states := []State{
+		states := []OrderState{
 			None,
 			Created,
 			Received,
@@ -199,5 +201,67 @@ func TestNewOrder(t *testing.T) {
 			// Assert
 			assert.False(t, res)
 		}
+	})
+
+	t.Run("Should return an error when trying to add an item that already exists", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		order.Items = append(order.Items, NewItem("item_id", 1.23, 1))
+
+		// Act
+		err := order.AddItem(NewItem("item_id", 1.23, 1), now)
+
+		// Assert
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, custom_error.ErrOrderItemAlreadyExists)
+	})
+
+	t.Run("Should return true if the order has items", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		order.Items = append(order.Items, NewItem("item_id", 1.23, 1))
+
+		// Act
+		res := order.HasItems()
+
+		// Assert
+		assert.True(t, res)
+	})
+
+	t.Run("Should return true if the order has on going payments", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		payment := payment_entity.NewPayment(order.Id, "payment_id", 1, 1.23, now)
+
+		order.Payments = append(order.Payments, payment)
+
+		// Act
+		res := order.HasOnGoingPayments()
+
+		// Assert
+		assert.True(t, res)
+	})
+
+	t.Run("Should return false if the order has no on going payments", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		payment := payment_entity.NewPayment(order.Id, "payment_id", 1, 1.23, now)
+		payment.State = payment_entity.Rejected
+
+		order.Payments = append(order.Payments, payment)
+
+		// Act
+		res := order.HasOnGoingPayments()
+
+		// Assert
+		assert.False(t, res)
 	})
 }

@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity"
+	order_entity "github.com/jfelipearaujo-org/ms-order-management/internal/entity/order_entity"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -15,7 +15,7 @@ type MockGetOrdersService[T interface{}] struct {
 }
 
 // Handle provides a mock function with given fields: ctx, request
-func (_m *MockGetOrdersService[T]) Handle(ctx context.Context, request T) (int, []entity.Order, error) {
+func (_m *MockGetOrdersService[T]) Handle(ctx context.Context, request T) (int, []order_entity.Order, error) {
 	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
@@ -23,9 +23,9 @@ func (_m *MockGetOrdersService[T]) Handle(ctx context.Context, request T) (int, 
 	}
 
 	var r0 int
-	var r1 []entity.Order
+	var r1 []order_entity.Order
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, T) (int, []entity.Order, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, T) (int, []order_entity.Order, error)); ok {
 		return rf(ctx, request)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, T) int); ok {
@@ -34,11 +34,11 @@ func (_m *MockGetOrdersService[T]) Handle(ctx context.Context, request T) (int, 
 		r0 = ret.Get(0).(int)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, T) []entity.Order); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, T) []order_entity.Order); ok {
 		r1 = rf(ctx, request)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]entity.Order)
+			r1 = ret.Get(1).([]order_entity.Order)
 		}
 	}
 

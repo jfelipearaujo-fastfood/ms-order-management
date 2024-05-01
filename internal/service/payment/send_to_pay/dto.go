@@ -6,7 +6,7 @@ import (
 )
 
 type SendToPayDto struct {
-	OrderID string `json:"order_id" validate:"required,uuid4"`
+	OrderID string `param:"id" json:"order_id" validate:"required,uuid4"`
 }
 
 func (dto *SendToPayDto) Validate() error {

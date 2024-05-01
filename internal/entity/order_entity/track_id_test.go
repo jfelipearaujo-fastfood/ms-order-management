@@ -1,4 +1,4 @@
-package entity
+package order_entity
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ func TestNewTrackID(t *testing.T) {
 		expectedLength := 7
 
 		// Act
-		res := NewTrackID()
+		res := NewTrackId()
 
 		// Assert
 		assert.Len(t, res, expectedLength)
@@ -22,8 +22,8 @@ func TestNewTrackID(t *testing.T) {
 	t.Run("Should return a different track ID each time", func(t *testing.T) {
 		// Arrange
 		// Act
-		res1 := NewTrackID()
-		res2 := NewTrackID()
+		res1 := NewTrackId()
+		res2 := NewTrackId()
 
 		// Assert
 		assert.NotEqual(t, res1, res2)
@@ -31,10 +31,10 @@ func TestNewTrackID(t *testing.T) {
 
 	t.Run("Should return a track ID from a string", func(t *testing.T) {
 		// Arrange
-		expected := TrackID("ABC-123")
+		expected := TrackId("ABC-123")
 
 		// Act
-		res := NewTrackIDFrom("ABC-123")
+		res := NewTrackIdFrom("ABC-123")
 
 		// Assert
 		assert.Equal(t, expected, res)
