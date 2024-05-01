@@ -89,6 +89,10 @@ test: ## Test the application
 		fi; \
 	fi
 
+test-bdd: ## Run BDD tests
+	@echo "Running BDD tests..."
+	@go test -race -count=1 ./tests/... -test.v -test.run ^TestFeatures$
+
 cover: ## View the coverage
 	@echo "Analyzing coverage..."
 	@go tool cover -func=coverage.out
@@ -208,6 +212,22 @@ fmt-docs: ## Format generated Swagger docs using swag
 			swag fmt -d internal -g cmd/api/main.go; \
 		else \
 			echo "You chose not to intall swag. Exiting..."; \
+			exit 1; \
+		fi; \
+	fi
+
+gen-scaffold-bdd: ## Gen BDD scaffold using godog
+	@if command -v godog > /dev/null; then \
+		echo "Generating BDD scaffold..."; \
+		godog ./tests/features; \
+	else \
+		read -p "Go 'godog' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+		if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+			go install github.com/cucumber/godog/cmd/godog@latest; \
+			echo "Generating BDD scaffold..."; \
+			godog ./tests/features; \
+		else \
+			echo "You chose not to intall godog. Exiting..."; \
 			exit 1; \
 		fi; \
 	fi
