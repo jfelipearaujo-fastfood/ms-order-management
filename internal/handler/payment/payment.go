@@ -67,5 +67,5 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		"message": "payment sent to be paid",
 	}
 
-	return ctx.JSON(http.StatusOK, ok)
+	return ctx.JSON(http.StatusCreated, ok)
 }
