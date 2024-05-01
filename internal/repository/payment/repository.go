@@ -45,3 +45,24 @@ func (r *PaymentRepository) Create(ctx context.Context, payment *payment_entity.
 
 	return nil
 }
+
+func (r *PaymentRepository) Update(ctx context.Context, payment *payment_entity.Payment) error {
+	sql, params, err := goqu.
+		Update("order_payments").
+		Set(goqu.Record{
+			"state":      payment.State,
+			"updated_at": payment.UpdatedAt,
+		}).
+		Where(goqu.Ex{"payment_id": payment.PaymentId}).
+		ToSQL()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.conn.ExecContext(ctx, sql, params...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

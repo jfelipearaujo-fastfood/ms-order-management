@@ -16,4 +16,9 @@ var (
 	ErrOrderHasOnGoingPayments BusinessError = New(http.StatusBadRequest, "operation not allowed", "order has on going payments or is already paid")
 
 	ErrTopicNotFound BusinessError = New(http.StatusNotFound, "unable to find the topic", "topic not found")
+
+	ErrQueueMessageNotValid BusinessError = New(http.StatusUnprocessableEntity, "unable to process the message", "message not valid")
+
+	ErrPaymentNotFound               BusinessError = New(http.StatusNotFound, "unable to find the payment", "payment not found")
+	ErrPaymentInvalidStateTransition BusinessError = New(http.StatusBadRequest, "unable to update payment state", "invalid state transition")
 )

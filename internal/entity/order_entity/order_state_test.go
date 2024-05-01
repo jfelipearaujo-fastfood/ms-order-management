@@ -6,6 +6,42 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewOrderState(t *testing.T) {
+	t.Run("Should return the correct state", func(t *testing.T) {
+		// Arrange
+		cases := []struct {
+			title    string
+			expected OrderState
+		}{
+			{"Created", Created},
+			{"Received", Received},
+			{"Processing", Processing},
+			{"Completed", Completed},
+			{"Delivered", Delivered},
+			{"Cancelled", Cancelled},
+		}
+
+		for _, c := range cases {
+			// Act
+			res := NewOrderState(c.title)
+
+			// Assert
+			assert.Equal(t, c.expected, res)
+		}
+	})
+
+	t.Run("Should return None when state is invalid", func(t *testing.T) {
+		// Arrange
+		title := "Invalid"
+
+		// Act
+		res := NewOrderState(title)
+
+		// Assert
+		assert.Equal(t, None, res)
+	})
+}
+
 func TestCanTransitionTo(t *testing.T) {
 	t.Run("Should return true when transition is allowed", func(t *testing.T) {
 		// Arrange

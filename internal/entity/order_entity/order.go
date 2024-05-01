@@ -119,3 +119,13 @@ func (o *Order) HasOnGoingPayments() bool {
 
 	return false
 }
+
+func (o *Order) GetPaymentByID(paymentID string) *payment_entity.Payment {
+	for i, payment := range o.Payments {
+		if payment.PaymentId == paymentID {
+			return &o.Payments[i]
+		}
+	}
+
+	return nil
+}

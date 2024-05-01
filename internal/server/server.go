@@ -22,6 +22,7 @@ import (
 	payment_repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository/payment"
 	order_create_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
 	order_get_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/process"
 	order_update_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/update"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/payment/send_to_pay"
 	"github.com/labstack/echo/v4"
@@ -32,6 +33,9 @@ type Server struct {
 	Config          *environment.Config
 	DatabaseService database.DatabaseService
 	TopicService    cloud.TopicService
+	QueueService    cloud.QueueService
+
+	Dependency Dependency
 }
 
 func NewServer(config *environment.Config) *Server {
@@ -46,10 +50,35 @@ func NewServer(config *environment.Config) *Server {
 		cloudConfig.BaseEndpoint = aws.String(config.CloudConfig.BaseEndpoint)
 	}
 
+	databaseService := database.NewDatabase(config)
+
+	timeProvider := time_provider.NewTimeProvider(time.Now)
+	orderRepository := order_repository.NewOrderRepository(databaseService.GetInstance())
+	paymentRepository := payment_repository.NewPaymentRepository(databaseService.GetInstance())
+
+	topicService := cloud.NewTopicService(config.CloudConfig.OrderPaymentTopicName, cloudConfig)
+
+	messageProcessor := process.NewService(orderRepository, paymentRepository, timeProvider)
+
 	return &Server{
 		Config:          config,
-		DatabaseService: database.NewDatabase(config),
-		TopicService:    cloud.NewService(config.CloudConfig.OrderPaymentTopicName, cloudConfig),
+		DatabaseService: databaseService,
+		TopicService:    topicService,
+		QueueService:    cloud.NewQueueService(config.CloudConfig.UpdateOrderQueueName, cloudConfig, messageProcessor),
+
+		Dependency: Dependency{
+			TimeProvider: timeProvider,
+
+			OrderRepository:   orderRepository,
+			PaymentRepository: paymentRepository,
+
+			CreateOrderService: order_create_service.NewService(orderRepository, timeProvider),
+			GetOrderService:    order_get_service.NewService(orderRepository),
+			UpdateOrderService: order_update_service.NewService(orderRepository, timeProvider),
+			SendToPayService:   send_to_pay.NewService(topicService, paymentRepository, timeProvider),
+
+			ProcessMessageService: messageProcessor,
+		},
 	}
 }
 
@@ -83,28 +112,14 @@ func (server *Server) registerHealthCheck(e *echo.Echo) {
 }
 
 func (s *Server) registerOrderHandlers(e *echo.Group) {
-	// providers
-	timeProvider := time_provider.NewTimeProvider(time.Now)
-
-	// repositories
-	orderRepository := order_repository.NewOrderRepository(s.DatabaseService.GetInstance())
-	paymentRepository := payment_repository.NewPaymentRepository(s.DatabaseService.GetInstance())
-
-	// services
-	createOrderService := order_create_service.NewService(orderRepository, timeProvider)
-	getOrderService := order_get_service.NewService(orderRepository)
-	updateOrderService := order_update_service.NewService(orderRepository, timeProvider)
-	sendToPayService := send_to_pay.NewService(s.TopicService, paymentRepository, timeProvider)
-
-	// handlers
-	createOrderHandler := create.NewHandler(createOrderService)
-	addOrderItemHandler := add_item.NewHandler(getOrderService, updateOrderService)
-	getOrderByIdOrTrackIdHandler := get_by_id.NewHandler(getOrderService)
-	sendToPaymentHandler := payment.NewHandler(sendToPayService, getOrderService)
+	createOrderHandler := create.NewHandler(s.Dependency.CreateOrderService)
+	addOrderItemHandler := add_item.NewHandler(s.Dependency.GetOrderService, s.Dependency.UpdateOrderService)
+	getOrderByIdOrTrackIdHandler := get_by_id.NewHandler(s.Dependency.GetOrderService)
+	sendToPaymentHandler := payment.NewHandler(s.Dependency.SendToPayService, s.Dependency.GetOrderService)
 
 	e.POST("/orders", createOrderHandler.Handle)
 	e.POST("/orders/:id/items", addOrderItemHandler.Handle)
 	e.GET("/orders/:id", getOrderByIdOrTrackIdHandler.Handle)
 	e.GET("/orders/tracking/:track_id", getOrderByIdOrTrackIdHandler.Handle)
-	e.POST("/orders/:id/payment", sendToPaymentHandler.Handle)
+	e.POST("/orders/:order_id/payment", sendToPaymentHandler.Handle)
 }

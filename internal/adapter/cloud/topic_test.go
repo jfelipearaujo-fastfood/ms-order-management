@@ -16,7 +16,7 @@ import (
 func TestGetTopicName(t *testing.T) {
 	t.Run("Should return topic name", func(t *testing.T) {
 		// Arrange
-		service := NewService("test-topic", aws.Config{})
+		service := NewTopicService("test-topic", aws.Config{})
 
 		// Act
 		topicName := service.GetTopicName()
@@ -44,7 +44,7 @@ func TestUpdateTopicArn(t *testing.T) {
 			},
 		})
 
-		service := NewService("test-topic", *stubber.SdkConfig)
+		service := NewTopicService("test-topic", *stubber.SdkConfig)
 
 		// Act
 		err := service.UpdateTopicArn(ctx)
@@ -71,7 +71,7 @@ func TestUpdateTopicArn(t *testing.T) {
 			},
 		})
 
-		service := NewService("test-topic", *stubber.SdkConfig)
+		service := NewTopicService("test-topic", *stubber.SdkConfig)
 
 		// Act
 		err := service.UpdateTopicArn(ctx)
@@ -93,7 +93,7 @@ func TestUpdateTopicArn(t *testing.T) {
 			Error:         raiseErr,
 		})
 
-		service := NewService("test-topic", *stubber.SdkConfig)
+		service := NewTopicService("test-topic", *stubber.SdkConfig)
 
 		// Act
 		err := service.UpdateTopicArn(ctx)
@@ -133,7 +133,7 @@ func TestPublishMessage(t *testing.T) {
 			},
 		})
 
-		service := NewService("test-topic", *stubber.SdkConfig)
+		service := NewTopicService("test-topic", *stubber.SdkConfig)
 
 		err := service.UpdateTopicArn(ctx)
 		assert.NoError(t, err)
@@ -177,7 +177,7 @@ func TestPublishMessage(t *testing.T) {
 			Error: raiseErr,
 		})
 
-		service := NewService("test-topic", *stubber.SdkConfig)
+		service := NewTopicService("test-topic", *stubber.SdkConfig)
 
 		err := service.UpdateTopicArn(ctx)
 		assert.NoError(t, err)

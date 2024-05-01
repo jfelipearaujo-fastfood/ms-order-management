@@ -50,6 +50,17 @@ func main() {
 		panic(err)
 	}
 
+	if err := server.QueueService.UpdateQueueUrl(ctx); err != nil {
+		slog.Error("error updating queue url", "error", err)
+		panic(err)
+	}
+
+	go func(ctx context.Context) {
+		for {
+			server.QueueService.ConsumeMessages(ctx)
+		}
+	}(ctx)
+
 	httpServer := server.GetHttpServer()
 
 	go func() {

@@ -16,26 +16,26 @@ type TopicService interface {
 	PublishMessage(ctx context.Context, message interface{}) (*string, error)
 }
 
-type Service struct {
+type AwsSnsService struct {
 	TopicName string
 	TopicArn  string
 	Client    *sns.Client
 }
 
-func NewService(topicName string, config aws.Config) TopicService {
+func NewTopicService(topicName string, config aws.Config) TopicService {
 	client := sns.NewFromConfig(config)
 
-	return &Service{
+	return &AwsSnsService{
 		TopicName: topicName,
 		Client:    client,
 	}
 }
 
-func (s *Service) GetTopicName() string {
+func (s *AwsSnsService) GetTopicName() string {
 	return s.TopicName
 }
 
-func (s *Service) UpdateTopicArn(ctx context.Context) error {
+func (s *AwsSnsService) UpdateTopicArn(ctx context.Context) error {
 	output, err := s.Client.ListTopics(ctx, &sns.ListTopicsInput{})
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (s *Service) UpdateTopicArn(ctx context.Context) error {
 	return custom_error.ErrTopicNotFound
 }
 
-func (s *Service) PublishMessage(ctx context.Context, message interface{}) (*string, error) {
+func (s *AwsSnsService) PublishMessage(ctx context.Context, message interface{}) (*string, error) {
 	body, err := json.Marshal(message)
 	if err != nil {
 		return nil, err

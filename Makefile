@@ -69,6 +69,10 @@ run: build docker-up ## Run the application
 	go run -race -ldflags="-s -w" cmd/api/main.go local
 
 ##@ Testing
+test-queue: ## Test the queue
+	@echo "Testing..."
+	@./scripts/tests/send-message.sh
+
 test: ## Test the application
 	@if command -v gcc > /dev/null; then \
 		echo "Testing..."; \
