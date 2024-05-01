@@ -484,28 +484,28 @@ func createPostgresContainer(ctx context.Context, network *testcontainers.Docker
 		Started: true,
 	})
 	if err != nil {
-		return nil, ctx, err
+		return nil, ctx, fmt.Errorf("failed to start postgres container: %w", err)
 	}
 
 	postgresIp, err := container.Host(ctx)
 	if err != nil {
-		return nil, ctx, err
+		return nil, ctx, fmt.Errorf("failed to get postgres ip: %w", err)
 	}
 
 	postgresPort, err := container.MappedPort(ctx, "5432")
 	if err != nil {
-		return nil, ctx, err
+		return nil, ctx, fmt.Errorf("failed to get postgres port: %w", err)
 	}
 
 	connStr := fmt.Sprintf("postgres://order:order@%s:%s/order_db?sslmode=disable", postgresIp, postgresPort.Port())
 
 	conn, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return nil, ctx, err
+		return nil, ctx, fmt.Errorf("failed to connect to postgres: %w", err)
 	}
 
 	if err := conn.Ping(); err != nil {
-		return nil, ctx, err
+		return nil, ctx, fmt.Errorf("failed to ping postgres: %w", err)
 	}
 
 	return container, ctx, nil
