@@ -1,0 +1,512 @@
+package tests
+
+import (
+	"bytes"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/cucumber/godog"
+	"github.com/cucumber/godog/colors"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/network"
+	"github.com/testcontainers/testcontainers-go/wait"
+
+	_ "github.com/lib/pq"
+)
+
+var opts = godog.Options{
+	Format:      "pretty",
+	Paths:       []string{"features"},
+	Output:      colors.Colored(os.Stdout),
+	Concurrency: 4,
+}
+
+func init() {
+	godog.BindFlags("godog.", flag.CommandLine, &opts)
+}
+
+func TestFeatures(t *testing.T) {
+	o := opts
+	o.TestingT = t
+
+	status := godog.TestSuite{
+		ScenarioInitializer: InitializeScenario,
+		Options:             &o,
+	}.Run()
+
+	if status == 2 {
+		t.SkipNow()
+	}
+
+	if status != 0 {
+		t.Fatalf("zero status code expected, %d received", status)
+	}
+}
+
+// Steps
+type CtxKey string
+
+const featureKey CtxKey = "feature"
+
+type feature struct {
+	HostApi string
+	OrderId string
+	Items   []string
+	State   string
+}
+
+func enrichContext(ctx context.Context, feat feature) (context.Context, error) {
+	return context.WithValue(ctx, featureKey, feat), nil
+}
+
+func fromContext(ctx context.Context) (feature, error) {
+	val := ctx.Value(featureKey)
+	if val == nil {
+		return feature{}, fmt.Errorf("value not found in context")
+	}
+
+	return val.(feature), nil
+}
+
+func iCreateAnOrder(ctx context.Context) (context.Context, error) {
+	feat, err := fromContext(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	body := `{
+		"customer_id": "1387d7f1-732e-4ab4-8c0a-adb13b0d7797"
+	}`
+
+	route := fmt.Sprintf("%s/orders", feat.HostApi)
+	req, err := http.NewRequest(http.MethodPost, route, bytes.NewBuffer([]byte(body)))
+	if err != nil {
+		return ctx, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return ctx, err
+	}
+
+	if res.StatusCode != http.StatusCreated {
+		return ctx, fmt.Errorf("Expected status code 201, got %d", res.StatusCode)
+	}
+
+	defer res.Body.Close()
+
+	var order map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
+		return ctx, err
+	}
+
+	orderId, ok := order["id"].(string)
+	if !ok {
+		return ctx, fmt.Errorf("Order ID not found")
+	}
+
+	feat.OrderId = orderId
+
+	return enrichContext(ctx, feat)
+}
+
+func iAddedAnItemToTheOrder(ctx context.Context) (context.Context, error) {
+	feat, err := fromContext(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	body := `{
+		"items": [
+			{
+				"id": "b88014db-320d-4ac9-99b1-422774d56106",
+				"unit_price": 10.5,
+				"quantity": 1
+			}
+		]
+	}`
+
+	route := fmt.Sprintf("%s/orders/%s/items", feat.HostApi, feat.OrderId)
+	req, err := http.NewRequest(http.MethodPost, route, bytes.NewBuffer([]byte(body)))
+	if err != nil {
+		return ctx, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return ctx, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return ctx, fmt.Errorf("Expected status code 200, got %d", res.StatusCode)
+	}
+
+	return ctx, nil
+}
+
+func iRetrieveTheOrder(ctx context.Context) (context.Context, error) {
+	feat, err := fromContext(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	route := fmt.Sprintf("%s/orders/%s", feat.HostApi, feat.OrderId)
+	req, err := http.NewRequest(http.MethodGet, route, nil)
+	if err != nil {
+		return ctx, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return ctx, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return ctx, fmt.Errorf("Expected status code 201, got %d", res.StatusCode)
+	}
+
+	defer res.Body.Close()
+
+	var order map[string]interface{}
+
+	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
+		return ctx, err
+	}
+
+	items, ok := order["items"].([]interface{})
+	if !ok {
+		return ctx, fmt.Errorf("Items not found")
+	}
+
+	for _, item := range items {
+		itemId, ok := item.(map[string]interface{})["id"].(string)
+		if !ok {
+			return ctx, fmt.Errorf("Item ID not found")
+		}
+		feat.Items = append(feat.Items, itemId)
+	}
+
+	state, ok := order["state_title"].(string)
+	if !ok {
+		return ctx, fmt.Errorf("State not found")
+	}
+
+	feat.State = state
+
+	return enrichContext(ctx, feat)
+}
+
+func theOrderShouldHaveTheItem(ctx context.Context) (context.Context, error) {
+	feat, err := fromContext(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	if len(feat.Items) != 1 {
+		return ctx, fmt.Errorf("Expected 1 item, got %d", len(feat.Items))
+	}
+
+	return ctx, nil
+}
+
+func theOrderStateShouldBe(ctx context.Context, state string) (context.Context, error) {
+	feat, err := fromContext(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	if feat.State != state {
+		return ctx, fmt.Errorf("Expected state %s, got %s", state, feat.State)
+	}
+
+	return ctx, nil
+}
+
+type testContext struct {
+	network    *testcontainers.DockerNetwork
+	containers []testcontainers.Container
+}
+
+var (
+	containers = make(map[string]testContext)
+)
+
+func InitializeScenario(ctx *godog.ScenarioContext) {
+	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+		network, err := network.New(ctx, network.WithCheckDuplicate(), network.WithDriver("bridge"))
+		if err != nil {
+			return ctx, err
+		}
+
+		postgresContainer, ctx, err := createPostgresContainer(ctx, network)
+		if err != nil {
+			return ctx, err
+		}
+
+		localstack, ctx, err := createLocalstackContainer(ctx, network)
+		if err != nil {
+			return ctx, err
+		}
+
+		apiContainer, ctx, err := createApiContainer(ctx, network)
+		if err != nil {
+			return ctx, err
+		}
+
+		containers[sc.Id] = testContext{
+			network: network,
+			containers: []testcontainers.Container{
+				postgresContainer,
+				localstack,
+				apiContainer,
+			},
+		}
+
+		return ctx, nil
+	})
+
+	ctx.Step(`^I create an order$`, iCreateAnOrder)
+	ctx.Step(`^I added an item to the order$`, iAddedAnItemToTheOrder)
+	ctx.Step(`^I retrieve the order$`, iRetrieveTheOrder)
+	ctx.Step(`^the order should have the item$`, theOrderShouldHaveTheItem)
+	ctx.Step(`^the order state should be "([^"]*)"$`, theOrderStateShouldBe)
+
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		if err != nil {
+			return ctx, err
+		}
+
+		tc := containers[sc.Id]
+
+		for _, c := range tc.containers {
+			err := c.Terminate(ctx)
+			if err != nil {
+				return ctx, err
+			}
+		}
+
+		err = tc.network.Remove(ctx)
+
+		return ctx, err
+	})
+}
+
+func createApiContainer(ctx context.Context, network *testcontainers.DockerNetwork) (testcontainers.Container, context.Context, error) {
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: testcontainers.ContainerRequest{
+			FromDockerfile: testcontainers.FromDockerfile{
+				Context:    "../",
+				Dockerfile: "Dockerfile",
+				KeepImage:  true,
+			},
+			ExposedPorts: []string{
+				"8080",
+			},
+			Env: map[string]string{
+				"API_PORT":                     "8080",
+				"API_ENV_NAME":                 "development",
+				"API_VERSION":                  "v1",
+				"DB_URL":                       "postgres://order:order@test:5432/order_db?sslmode=disable",
+				"AWS_ACCESS_KEY_ID":            "test",
+				"AWS_SECRET_ACCESS_KEY":        "test",
+				"AWS_REGION":                   "us-east-1",
+				"AWS_BASE_ENDPOINT":            "http://test:4566",
+				"AWS_ORDER_PAYMENT_TOPIC_NAME": "OrderPaymentTopic",
+				"AWS_UPDATE_ORDER_QUEUE_NAME":  "UpdateOrderQueue",
+			},
+			Networks: []string{
+				network.Name,
+			},
+			NetworkAliases: map[string][]string{
+				network.Name: {
+					"test",
+				},
+			},
+			WaitingFor: wait.ForLog("Server started address=:8080"),
+		},
+		Started: true,
+	})
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	ports, err := container.Ports(ctx)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	if len(ports["8080/tcp"]) == 0 {
+		return nil, ctx, fmt.Errorf("Port 8080/tcp not found")
+	}
+
+	port := ports["8080/tcp"][0].HostPort
+
+	res, err := http.Get(fmt.Sprintf("http://localhost:%s/health", port))
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, ctx, err
+		}
+		defer res.Body.Close()
+
+		fmt.Printf("Body: %s", string(body))
+
+		return nil, ctx, fmt.Errorf("API health check failed with status: %d", res.StatusCode)
+	}
+
+	ctx, err = enrichContext(ctx, feature{
+		HostApi: fmt.Sprintf("http://localhost:%s/api/v1", port),
+	})
+
+	return container, ctx, err
+}
+
+func createLocalstackContainer(ctx context.Context, network *testcontainers.DockerNetwork) (testcontainers.Container, context.Context, error) {
+	snsScript, err := filepath.Abs(filepath.Join(".", "testdata", "init-sns.sh"))
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	sqsScript, err := filepath.Abs(filepath.Join(".", "testdata", "init-sqs.sh"))
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	snsScriptReader, err := os.Open(snsScript)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	sqsScriptReader, err := os.Open(sqsScript)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: testcontainers.ContainerRequest{
+			Image: "localstack/localstack:latest",
+			ExposedPorts: []string{
+				"4566",
+			},
+			Env: map[string]string{
+				"SERVICES":       "sqs,sns",
+				"DEFAULT_REGION": "us-east-1",
+				"DOCKER_HOST":    "unix:///var/run/docker.sock",
+			},
+			Networks: []string{
+				network.Name,
+			},
+			NetworkAliases: map[string][]string{
+				network.Name: {
+					"test",
+				},
+			},
+			Files: []testcontainers.ContainerFile{
+				{
+					Reader:            snsScriptReader,
+					ContainerFilePath: "/etc/localstack/init/ready.d/init-sns.sh",
+					FileMode:          0777,
+				},
+				{
+					Reader:            sqsScriptReader,
+					ContainerFilePath: "/etc/localstack/init/ready.d/init-sqs.sh",
+					FileMode:          0777,
+				},
+			},
+			WaitingFor: wait.ForListeningPort("4566/tcp").WithStartupTimeout(120 * time.Second),
+		},
+		Started: true,
+	})
+
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	return container, ctx, nil
+}
+
+func createPostgresContainer(ctx context.Context, network *testcontainers.DockerNetwork) (testcontainers.Container, context.Context, error) {
+	dbScript, err := filepath.Abs(filepath.Join(".", "testdata", "init-db.sql"))
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	dbScriptReader, err := os.Open(dbScript)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: testcontainers.ContainerRequest{
+			Image: "postgres:16.0",
+			ExposedPorts: []string{
+				"5432",
+			},
+			Env: map[string]string{
+				"POSTGRES_DB":       "order_db",
+				"POSTGRES_USER":     "order",
+				"POSTGRES_PASSWORD": "order",
+			},
+			Networks: []string{
+				network.Name,
+			},
+			NetworkAliases: map[string][]string{
+				network.Name: {
+					"test",
+				},
+			},
+			Files: []testcontainers.ContainerFile{
+				{
+					Reader:            dbScriptReader,
+					ContainerFilePath: "/docker-entrypoint-initdb.d/init.sql",
+					FileMode:          0644,
+				},
+			},
+			WaitingFor: wait.ForLog("PostgreSQL init process complete; ready for start up"),
+		},
+		Started: true,
+	})
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	postgresIp, err := container.Host(ctx)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	postgresPort, err := container.MappedPort(ctx, "5432")
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	connStr := fmt.Sprintf("postgres://order:order@%s:%s/order_db?sslmode=disable", postgresIp, postgresPort.Port())
+
+	conn, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	if err := conn.Ping(); err != nil {
+		return nil, ctx, err
+	}
+
+	return container, ctx, nil
+}
