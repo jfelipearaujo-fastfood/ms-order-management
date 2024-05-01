@@ -335,7 +335,7 @@ func createApiContainer(ctx context.Context, network *testcontainers.DockerNetwo
 					"test",
 				},
 			},
-			WaitingFor: wait.ForLog("Server started address=:8080"),
+			WaitingFor: wait.ForLog("Server started address=:8080").WithStartupTimeout(120 * time.Second),
 		},
 		Started: true,
 	})
@@ -479,7 +479,7 @@ func createPostgresContainer(ctx context.Context, network *testcontainers.Docker
 					FileMode:          0644,
 				},
 			},
-			WaitingFor: wait.ForLog("PostgreSQL init process complete; ready for start up"),
+			WaitingFor: wait.ForLog("PostgreSQL init process complete; ready for start up").WithStartupTimeout(120 * time.Second),
 		},
 		Started: true,
 	})
