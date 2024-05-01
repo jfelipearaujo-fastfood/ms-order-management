@@ -18,4 +18,5 @@ type OrderRepository interface {
 
 type PaymentRepository interface {
 	Create(ctx context.Context, payment *payment_entity.Payment) error
+	Update(ctx context.Context, payment *payment_entity.Payment) error
 }

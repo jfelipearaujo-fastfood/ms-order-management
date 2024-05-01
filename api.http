@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### Get order by ID
-GET {{host}}/api/v1/orders/e059e383-836c-4831-b97c-62a741cbd3c7
+GET {{host}}/api/v1/orders/0674c12f-63ca-49e2-a2b2-d9113e97136e
 Content-Type: application/json
 
 ### Get order by Tack ID
@@ -21,7 +21,7 @@ GET {{host}}/api/v1/orders/tracking/UVW-938
 Content-Type: application/json
 
 ### Add item to the order
-POST {{host}}/api/v1/orders/e059e383-836c-4831-b97c-62a741cbd3c7/items
+POST {{host}}/api/v1/orders/0674c12f-63ca-49e2-a2b2-d9113e97136e/items
 Content-Type: application/json
 
 {
@@ -35,5 +35,5 @@ Content-Type: application/json
 }
 
 ### Send order to payment topic
-POST {{host}}/api/v1/orders/e059e383-836c-4831-b97c-62a741cbd3c7/payment
+POST {{host}}/api/v1/orders/0674c12f-63ca-49e2-a2b2-d9113e97136e/payment
 Content-Type: application/json

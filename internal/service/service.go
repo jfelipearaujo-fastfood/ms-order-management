@@ -27,3 +27,9 @@ type UpdateOrderService[T any] interface {
 type SendToPayService[T any] interface {
 	Handle(ctx context.Context, order *order_entity.Order, request T) error
 }
+
+// ---
+
+type ProcessMessageService[T any] interface {
+	Handle(ctx context.Context, message T) error
+}

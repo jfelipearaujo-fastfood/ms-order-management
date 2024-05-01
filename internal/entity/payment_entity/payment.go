@@ -42,3 +42,10 @@ func (p *Payment) IsInState(states ...PaymentState) bool {
 func (p *Payment) RefreshStateTitle() {
 	p.StateTitle = p.State.String()
 }
+
+func (p *Payment) UpdateState(newState PaymentState, now time.Time) {
+	p.State = newState
+	p.StateTitle = p.State.String()
+
+	p.UpdatedAt = now
+}
