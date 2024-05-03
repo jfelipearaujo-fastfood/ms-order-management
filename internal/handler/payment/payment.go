@@ -3,6 +3,7 @@ package payment
 import (
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/payment/send_to_pay"
@@ -54,6 +55,10 @@ func (h *Handler) Handle(ctx echo.Context) error {
 	if order.HasOnGoingPayments() {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasOnGoingPayments)
 	}
+
+	request.PaymentId = uuid.NewString()
+	request.TotalItems = order.TotalItems
+	request.Amount = order.TotalPrice
 
 	if err := h.sendToPayService.Handle(context, &order, request); err != nil {
 		if custom_error.IsBusinessErr(err) {
