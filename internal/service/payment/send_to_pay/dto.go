@@ -6,7 +6,11 @@ import (
 )
 
 type SendToPayDto struct {
-	OrderID string `param:"order_id" json:"order_id" validate:"required,uuid4"`
+	OrderID   string `param:"order_id" json:"order_id" validate:"required,uuid4"`
+	PaymentId string `json:"payment_id"`
+
+	TotalItems int     `json:"total_items"`
+	Amount     float64 `json:"amount"`
 }
 
 func (dto *SendToPayDto) Validate() error {

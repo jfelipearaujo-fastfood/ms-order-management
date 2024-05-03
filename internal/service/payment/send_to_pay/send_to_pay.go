@@ -45,7 +45,7 @@ func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request
 
 	payment := payment_entity.NewPayment(
 		order.Id,
-		*messageId,
+		request.PaymentId,
 		order.TotalItems,
 		order.TotalPrice,
 		s.timeProvider.GetTime(),
