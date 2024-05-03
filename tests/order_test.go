@@ -53,35 +53,19 @@ func TestFeatures(t *testing.T) {
 }
 
 // Steps
-type CtxKey string
-
-const featureKey CtxKey = "feature"
+const featureKey CtxKeyType = "feature"
 
 type feature struct {
-	HostApi string
-	OrderId string
-	Items   []string
-	State   string
+	HostApi    string
+	OrderId    string
+	Items      []string
+	StateTitle string
 }
 
-func enrichContext(ctx context.Context, feat feature) (context.Context, error) {
-	return context.WithValue(ctx, featureKey, feat), nil
-}
-
-func fromContext(ctx context.Context) (feature, error) {
-	val := ctx.Value(featureKey)
-	if val == nil {
-		return feature{}, fmt.Errorf("value not found in context")
-	}
-
-	return val.(feature), nil
-}
+var state = NewState[feature](featureKey)
 
 func iCreateAnOrder(ctx context.Context) (context.Context, error) {
-	feat, err := fromContext(ctx)
-	if err != nil {
-		return ctx, err
-	}
+	feat := state.retrieve(ctx)
 
 	body := `{
 		"customer_id": "1387d7f1-732e-4ab4-8c0a-adb13b0d7797"
@@ -118,14 +102,11 @@ func iCreateAnOrder(ctx context.Context) (context.Context, error) {
 
 	feat.OrderId = orderId
 
-	return enrichContext(ctx, feat)
+	return state.enrich(ctx, feat), nil
 }
 
 func iAddedAnItemToTheOrder(ctx context.Context) (context.Context, error) {
-	feat, err := fromContext(ctx)
-	if err != nil {
-		return ctx, err
-	}
+	feat := state.retrieve(ctx)
 
 	body := `{
 		"items": [
@@ -157,10 +138,7 @@ func iAddedAnItemToTheOrder(ctx context.Context) (context.Context, error) {
 }
 
 func iRetrieveTheOrder(ctx context.Context) (context.Context, error) {
-	feat, err := fromContext(ctx)
-	if err != nil {
-		return ctx, err
-	}
+	feat := state.retrieve(ctx)
 
 	route := fmt.Sprintf("%s/orders/%s", feat.HostApi, feat.OrderId)
 	req, err := http.NewRequest(http.MethodGet, route, nil)
@@ -199,21 +177,18 @@ func iRetrieveTheOrder(ctx context.Context) (context.Context, error) {
 		feat.Items = append(feat.Items, itemId)
 	}
 
-	state, ok := order["state_title"].(string)
+	stateTitle, ok := order["state_title"].(string)
 	if !ok {
 		return ctx, fmt.Errorf("State not found")
 	}
 
-	feat.State = state
+	feat.StateTitle = stateTitle
 
-	return enrichContext(ctx, feat)
+	return state.enrich(ctx, feat), nil
 }
 
 func theOrderShouldHaveTheItem(ctx context.Context) (context.Context, error) {
-	feat, err := fromContext(ctx)
-	if err != nil {
-		return ctx, err
-	}
+	feat := state.retrieve(ctx)
 
 	if len(feat.Items) != 1 {
 		return ctx, fmt.Errorf("Expected 1 item, got %d", len(feat.Items))
@@ -222,14 +197,11 @@ func theOrderShouldHaveTheItem(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-func theOrderStateShouldBe(ctx context.Context, state string) (context.Context, error) {
-	feat, err := fromContext(ctx)
-	if err != nil {
-		return ctx, err
-	}
+func theOrderStateShouldBe(ctx context.Context, stateTitle string) (context.Context, error) {
+	feat := state.retrieve(ctx)
 
-	if feat.State != state {
-		return ctx, fmt.Errorf("Expected state %s, got %s", state, feat.State)
+	if feat.StateTitle != stateTitle {
+		return ctx, fmt.Errorf("Expected state %s, got %s", stateTitle, feat.StateTitle)
 	}
 
 	return ctx, nil
@@ -371,11 +343,9 @@ func createApiContainer(ctx context.Context, network *testcontainers.DockerNetwo
 		return nil, ctx, fmt.Errorf("API health check failed with status: %d", res.StatusCode)
 	}
 
-	ctx, err = enrichContext(ctx, feature{
+	return container, state.enrich(ctx, &feature{
 		HostApi: fmt.Sprintf("http://localhost:%s/api/v1", port),
-	})
-
-	return container, ctx, err
+	}), nil
 }
 
 func createLocalstackContainer(ctx context.Context, network *testcontainers.DockerNetwork) (testcontainers.Container, context.Context, error) {
