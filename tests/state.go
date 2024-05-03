@@ -2,24 +2,26 @@ package tests
 
 import "context"
 
-type ctxKeyType string
+type CtxKeyType string
 
-const ctxKey ctxKeyType = "tests"
-
-func enrichContext[T any](ctx context.Context, data *T) context.Context {
-	if ctx == nil {
-      return context.Background()
-  }
-  return context.WithValue(ctx, ctxKey, data)
+type State[T any] struct {
+	CtxKey CtxKeyType
 }
 
-func fromContext[T any](ctx context.Context) *T {
-  if ctx == nil {
-    return new(T)
-  }
-  data, ok := ctx.Value(ctxKey).(*T)
-  if !ok {
-    return new(T)
-  }
-  return data
+func NewState[T any](ctxKey CtxKeyType) *State[T] {
+	return &State[T]{
+		CtxKey: ctxKey,
+	}
+}
+
+func (state *State[T]) enrich(ctx context.Context, data *T) context.Context {
+	return context.WithValue(ctx, state.CtxKey, data)
+}
+
+func (state *State[T]) retrieve(ctx context.Context) *T {
+	data, ok := ctx.Value(state.CtxKey).(*T)
+	if !ok {
+		return new(T)
+	}
+	return data
 }
