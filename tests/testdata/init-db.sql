@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS order_items (
     order_id varchar(255),
     product_id varchar(255),
+    name varchar(255),
     quantity int,
     price DECIMAL(10, 2),
     PRIMARY KEY (order_id, product_id)
