@@ -36,6 +36,7 @@ func TestOrder(t *testing.T) {
 
 		expectedItem := Item{
 			Id:        "item_id",
+			Name:      "name",
 			UnitPrice: 1.23,
 			Quantity:  1,
 		}
@@ -43,7 +44,7 @@ func TestOrder(t *testing.T) {
 		order := NewOrder("customer_id", now)
 
 		// Act
-		err := order.AddItem(NewItem("item_id", 1.23, 1), now)
+		err := order.AddItem(NewItem("item_id", "name", 1.23, 1), now)
 
 		// Assert
 		assert.NoError(t, err)
@@ -59,10 +60,10 @@ func TestOrder(t *testing.T) {
 
 		var err error
 
-		err = order.AddItem(NewItem("item_id_1", 1.23, 1), now)
+		err = order.AddItem(NewItem("item_id_1", "name", 1.23, 1), now)
 		assert.NoError(t, err)
 
-		err = order.AddItem(NewItem("item_id_2", 2.34, 2), now)
+		err = order.AddItem(NewItem("item_id_2", "name", 2.34, 2), now)
 		assert.NoError(t, err)
 
 		// Act
@@ -208,10 +209,10 @@ func TestOrder(t *testing.T) {
 		now := time.Now()
 
 		order := NewOrder("customer_id", now)
-		order.Items = append(order.Items, NewItem("item_id", 1.23, 1))
+		order.Items = append(order.Items, NewItem("item_id", "name", 1.23, 1))
 
 		// Act
-		err := order.AddItem(NewItem("item_id", 1.23, 1), now)
+		err := order.AddItem(NewItem("item_id", "name", 1.23, 1), now)
 
 		// Assert
 		assert.Error(t, err)
@@ -223,7 +224,7 @@ func TestOrder(t *testing.T) {
 		now := time.Now()
 
 		order := NewOrder("customer_id", now)
-		order.Items = append(order.Items, NewItem("item_id", 1.23, 1))
+		order.Items = append(order.Items, NewItem("item_id", "name", 1.23, 1))
 
 		// Act
 		res := order.HasItems()

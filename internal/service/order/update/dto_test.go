@@ -31,6 +31,7 @@ func TestValidate(t *testing.T) {
 			Items: []UpdateOrderItemDto{
 				{
 					ItemId:    uuid.NewString(),
+					Name:      "name",
 					UnitPrice: 10,
 					Quantity:  1,
 				},

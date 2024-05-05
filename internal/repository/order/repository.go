@@ -29,8 +29,8 @@ func (r *OrderRepository) Create(ctx context.Context, order *order_entity.Order)
 	`
 
 	queryInsertOrderItems := `
-		INSERT INTO order_items (order_id, product_id, quantity, price)
-		VALUES ($1, $2, $3, $4);
+		INSERT INTO order_items (order_id, product_id, name, quantity, price)
+		VALUES ($1, $2, $3, $4, $5);
 	`
 
 	tx, err := r.conn.BeginTx(ctx, &sql.TxOptions{})
@@ -60,6 +60,7 @@ func (r *OrderRepository) Create(ctx context.Context, order *order_entity.Order)
 			queryInsertOrderItems,
 			order.Id,
 			item.Id,
+			item.Name,
 			item.Quantity,
 			item.UnitPrice)
 		if err != nil {
@@ -157,7 +158,7 @@ func (r *OrderRepository) getBy(ctx context.Context, column string, value string
 
 	sql, params, err = goqu.
 		From("order_items").
-		Select("order_items.product_id", "order_items.quantity", "order_items.price").
+		Select("order_items.product_id", "order_items.name", "order_items.quantity", "order_items.price").
 		LeftJoin(goqu.T("orders"), goqu.On(goqu.I("order_items.order_id").Eq(goqu.I("orders.id")))).
 		Where(goqu.ExOr{
 			"order_items.order_id": value,
@@ -178,6 +179,7 @@ func (r *OrderRepository) getBy(ctx context.Context, column string, value string
 		item := order_entity.Item{}
 		err = statement.Scan(
 			&item.Id,
+			&item.Name,
 			&item.Quantity,
 			&item.UnitPrice)
 		if err != nil {
@@ -283,8 +285,8 @@ func (r *OrderRepository) Update(ctx context.Context, order *order_entity.Order,
 	`
 
 	queryInsertOrderItems := `
-		INSERT INTO order_items (order_id, product_id, quantity, price)
-		VALUES ($1, $2, $3, $4);
+		INSERT INTO order_items (order_id, product_id, name, quantity, price)
+		VALUES ($1, $2, $3, $4, $5);
 	`
 
 	tx, err := r.conn.BeginTx(ctx, &sql.TxOptions{})
@@ -340,6 +342,7 @@ func (r *OrderRepository) Update(ctx context.Context, order *order_entity.Order,
 				queryInsertOrderItems,
 				order.Id,
 				item.Id,
+				item.Name,
 				item.Quantity,
 				item.UnitPrice)
 			if err != nil {

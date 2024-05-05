@@ -7,6 +7,7 @@ import (
 
 type UpdateOrderItemDto struct {
 	ItemId    string  `json:"id" validate:"required,uuid4"`
+	Name      string  `json:"name" validate:"required"`
 	UnitPrice float64 `json:"unit_price" validate:"required,min=0.01,max=1000"`
 	Quantity  int     `json:"quantity" validate:"required,min=1,max=100"`
 }

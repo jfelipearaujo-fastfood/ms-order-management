@@ -36,7 +36,7 @@ func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request
 
 	if shouldUpdateItems {
 		for _, item := range request.Items {
-			itemToAdd := order_entity.NewItem(item.ItemId, item.UnitPrice, item.Quantity)
+			itemToAdd := order_entity.NewItem(item.ItemId, item.Name, item.UnitPrice, item.Quantity)
 
 			if err := order.AddItem(itemToAdd, s.timeProvider.GetTime()); err != nil {
 				return err

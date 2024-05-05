@@ -5,9 +5,17 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/custom_error"
 )
 
+type SendToPayItemDto struct {
+	Id       string `json:"id" validate:"required,uuid4"`
+	Name     string `json:"name" validate:"required"`
+	Quantity int    `json:"quantity" validate:"required"`
+}
+
 type SendToPayDto struct {
 	OrderID   string `param:"order_id" json:"order_id" validate:"required,uuid4"`
 	PaymentId string `json:"payment_id"`
+
+	Items []SendToPayItemDto `json:"items" validate:"required,dive"`
 
 	TotalItems int     `json:"total_items"`
 	Amount     float64 `json:"amount"`
