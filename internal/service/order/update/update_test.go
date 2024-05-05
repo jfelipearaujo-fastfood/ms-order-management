@@ -76,6 +76,7 @@ func TestHandle(t *testing.T) {
 			Items: []UpdateOrderItemDto{
 				{
 					ItemId:    uuid.NewString(),
+					Name:      "name",
 					UnitPrice: 10.0,
 					Quantity:  1,
 				},
@@ -213,6 +214,7 @@ func TestHandle(t *testing.T) {
 			Items: []UpdateOrderItemDto{
 				{
 					ItemId:    itemId,
+					Name:      "name",
 					UnitPrice: 10.0,
 					Quantity:  1,
 				},

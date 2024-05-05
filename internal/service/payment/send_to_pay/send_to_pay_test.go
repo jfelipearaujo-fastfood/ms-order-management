@@ -49,6 +49,8 @@ func TestHandle(t *testing.T) {
 			Id: uuid.NewString(),
 			Items: []order_entity.Item{
 				{
+					Id:        uuid.NewString(),
+					Name:      "name",
 					UnitPrice: 10.5,
 					Quantity:  1,
 				},
@@ -56,7 +58,17 @@ func TestHandle(t *testing.T) {
 		}
 
 		req := SendToPayDto{
-			OrderID: uuid.NewString(),
+			OrderID:   uuid.NewString(),
+			PaymentId: uuid.NewString(),
+			Items: []SendToPayItemDto{
+				{
+					Id:       uuid.NewString(),
+					Name:     "name",
+					Quantity: 1,
+				},
+			},
+			TotalItems: 1,
+			Amount:     10.5,
 		}
 
 		// Act
@@ -90,7 +102,17 @@ func TestHandle(t *testing.T) {
 		}
 
 		req := SendToPayDto{
-			OrderID: "",
+			OrderID:   "",
+			PaymentId: uuid.NewString(),
+			Items: []SendToPayItemDto{
+				{
+					Id:       uuid.NewString(),
+					Name:     "name",
+					Quantity: 1,
+				},
+			},
+			TotalItems: 1,
+			Amount:     10.5,
 		}
 
 		// Act
@@ -128,7 +150,17 @@ func TestHandle(t *testing.T) {
 		}
 
 		req := SendToPayDto{
-			OrderID: uuid.NewString(),
+			OrderID:   uuid.NewString(),
+			PaymentId: uuid.NewString(),
+			Items: []SendToPayItemDto{
+				{
+					Id:       uuid.NewString(),
+					Name:     "name",
+					Quantity: 1,
+				},
+			},
+			TotalItems: 1,
+			Amount:     10.5,
 		}
 
 		// Act
@@ -182,7 +214,17 @@ func TestHandle(t *testing.T) {
 		}
 
 		req := SendToPayDto{
-			OrderID: uuid.NewString(),
+			OrderID:   uuid.NewString(),
+			PaymentId: uuid.NewString(),
+			Items: []SendToPayItemDto{
+				{
+					Id:       uuid.NewString(),
+					Name:     "name",
+					Quantity: 1,
+				},
+			},
+			TotalItems: 1,
+			Amount:     10.5,
 		}
 
 		// Act

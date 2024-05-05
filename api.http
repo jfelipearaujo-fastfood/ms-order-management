@@ -28,6 +28,7 @@ Content-Type: application/json
   "items": [
     {
       "id": "b88014db-320d-4ac9-99b1-422774d56106",
+      "name": "Product 1",
       "unit_price": 10.5,
       "quantity": 1
     }

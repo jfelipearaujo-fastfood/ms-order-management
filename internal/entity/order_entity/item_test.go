@@ -11,12 +11,13 @@ func TestNewItem(t *testing.T) {
 		// Arrange
 		expect := Item{
 			Id:        "1",
+			Name:      "name",
 			UnitPrice: 10.0,
 			Quantity:  2,
 		}
 
 		// Act
-		res := NewItem("1", 10.0, 2)
+		res := NewItem("1", "name", 10.0, 2)
 
 		// Assert
 		assert.Equal(t, expect, res)

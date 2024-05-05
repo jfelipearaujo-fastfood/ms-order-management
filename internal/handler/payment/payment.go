@@ -57,6 +57,17 @@ func (h *Handler) Handle(ctx echo.Context) error {
 	}
 
 	request.PaymentId = uuid.NewString()
+
+	request.Items = []send_to_pay.SendToPayItemDto{}
+
+	for _, item := range order.Items {
+		request.Items = append(request.Items, send_to_pay.SendToPayItemDto{
+			Id:       item.Id,
+			Name:     item.Name,
+			Quantity: item.Quantity,
+		})
+	}
+
 	request.TotalItems = order.TotalItems
 	request.Amount = order.TotalPrice
 

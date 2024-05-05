@@ -12,6 +12,13 @@ func TestValidate(t *testing.T) {
 		// Arrange
 		dto := SendToPayDto{
 			OrderID: uuid.NewString(),
+			Items: []SendToPayItemDto{
+				{
+					Id:       uuid.NewString(),
+					Name:     "Test",
+					Quantity: 1,
+				},
+			},
 		}
 
 		// Act
