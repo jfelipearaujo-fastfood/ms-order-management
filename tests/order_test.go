@@ -112,6 +112,7 @@ func iAddedAnItemToTheOrder(ctx context.Context) (context.Context, error) {
 		"items": [
 			{
 				"id": "b88014db-320d-4ac9-99b1-422774d56106",
+				"name": "Test item",
 				"unit_price": 10.5,
 				"quantity": 1
 			}
