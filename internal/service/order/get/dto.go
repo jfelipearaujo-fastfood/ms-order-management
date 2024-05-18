@@ -7,9 +7,9 @@ import (
 )
 
 type GetOrderDto struct {
-	OrderId    string `param:"id" validate:"required_without=TrackId,uuid-when-not-empty"`
-	TrackId    string `param:"track_id" validate:"required_without=OrderId,track-id-when-not-empty"`
-	CustomerId string `param:"customer_id" validate:"required_without=OrderId TrackId,uuid-when-not-empty"`
+	OrderId    string `param:"id" validate:"uuid-when-not-empty"`
+	TrackId    string `param:"track_id" validate:"track-id-when-not-empty"`
+	CustomerId string `param:"customer_id" validate:"uuid-when-not-empty"`
 }
 
 func (dto *GetOrderDto) FindViaID() bool {
@@ -28,6 +28,10 @@ func (dto *GetOrderDto) Validate() error {
 	}
 
 	if err := validator.Struct(dto); err != nil {
+		return custom_error.ErrRequestNotValid
+	}
+
+	if dto.OrderId == "" && dto.TrackId == "" && dto.CustomerId == "" {
 		return custom_error.ErrRequestNotValid
 	}
 
