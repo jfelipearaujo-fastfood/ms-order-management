@@ -7,12 +7,17 @@ import (
 )
 
 type GetOrderDto struct {
-	OrderId string `param:"id" validate:"required_without=TrackId,uuid-when-not-empty"`
-	TrackId string `param:"track_id" validate:"required_without=OrderId,track-id-when-not-empty"`
+	OrderId    string `param:"id" validate:"required_without=TrackId,uuid-when-not-empty"`
+	TrackId    string `param:"track_id" validate:"required_without=OrderId,track-id-when-not-empty"`
+	CustomerId string `param:"customer_id" validate:"required_without=OrderId TrackId,uuid-when-not-empty"`
 }
 
 func (dto *GetOrderDto) FindViaID() bool {
 	return dto.OrderId != ""
+}
+
+func (dto *GetOrderDto) FindViaCustomerID() bool {
+	return dto.CustomerId != ""
 }
 
 func (dto *GetOrderDto) Validate() error {

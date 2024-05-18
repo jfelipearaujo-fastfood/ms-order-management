@@ -74,6 +74,34 @@ func (_m *MockOrderRepository) GetAll(ctx context.Context, pagination common.Pag
 	return r0, r1, r2
 }
 
+// GetByCustomerID provides a mock function with given fields: ctx, customerId
+func (_m *MockOrderRepository) GetByCustomerID(ctx context.Context, customerId string) (order_entity.Order, error) {
+	ret := _m.Called(ctx, customerId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByCustomerID")
+	}
+
+	var r0 order_entity.Order
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (order_entity.Order, error)); ok {
+		return rf(ctx, customerId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) order_entity.Order); ok {
+		r0 = rf(ctx, customerId)
+	} else {
+		r0 = ret.Get(0).(order_entity.Order)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, customerId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetByID provides a mock function with given fields: ctx, id
 func (_m *MockOrderRepository) GetByID(ctx context.Context, id string) (order_entity.Order, error) {
 	ret := _m.Called(ctx, id)
