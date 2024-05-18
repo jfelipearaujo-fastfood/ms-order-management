@@ -13,7 +13,7 @@ spec:
       labels:
         app: ms-order-management
     spec:
-      serviceAccountName: sa-products
+      serviceAccountName: sa-orders
       containers:
         - name: ms-order-management
           image: jsfelipearaujo/ms-order-management:latest
