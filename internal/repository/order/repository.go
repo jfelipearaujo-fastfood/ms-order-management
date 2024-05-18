@@ -83,6 +83,10 @@ func (r *OrderRepository) GetByTrackID(ctx context.Context, trackId string) (ord
 	return r.getBy(ctx, "track_id", trackId)
 }
 
+func (r *OrderRepository) GetByCustomerID(ctx context.Context, customerId string) (order_entity.Order, error) {
+	return r.getBy(ctx, "customer_id", customerId)
+}
+
 func (r *OrderRepository) getBy(ctx context.Context, column string, value string) (order_entity.Order, error) {
 	order := order_entity.Order{}
 

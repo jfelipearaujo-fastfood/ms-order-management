@@ -31,6 +31,15 @@ func (s *Service) Handle(ctx context.Context, request GetOrderDto) (order_entity
 		return order, nil
 	}
 
+	if request.FindViaCustomerID() {
+		order, err := s.repository.GetByCustomerID(ctx, request.CustomerId)
+		if err != nil {
+			return order_entity.Order{}, err
+		}
+
+		return order, nil
+	}
+
 	order, err := s.repository.GetByTrackID(ctx, request.TrackId)
 	if err != nil {
 		return order_entity.Order{}, err

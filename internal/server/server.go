@@ -121,5 +121,6 @@ func (s *Server) registerOrderHandlers(e *echo.Group) {
 	e.POST("/orders/:id/items", addOrderItemHandler.Handle)
 	e.GET("/orders/:id", getOrderByIdOrTrackIdHandler.Handle)
 	e.GET("/orders/tracking/:track_id", getOrderByIdOrTrackIdHandler.Handle)
+	e.GET("/orders/customer/:customer_id", getOrderByIdOrTrackIdHandler.Handle)
 	e.POST("/orders/:order_id/payment", sendToPaymentHandler.Handle)
 }

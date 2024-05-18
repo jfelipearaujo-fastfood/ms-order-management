@@ -12,6 +12,7 @@ type OrderRepository interface {
 	Create(ctx context.Context, order *order_entity.Order) error
 	GetByID(ctx context.Context, id string) (order_entity.Order, error)
 	GetByTrackID(ctx context.Context, trackId string) (order_entity.Order, error)
+	GetByCustomerID(ctx context.Context, customerId string) (order_entity.Order, error)
 	GetAll(ctx context.Context, pagination common.Pagination, filter GetAllOrdersFilter) (int, []order_entity.Order, error)
 	Update(ctx context.Context, order *order_entity.Order, updateItems bool) error
 }

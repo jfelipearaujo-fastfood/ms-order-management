@@ -69,5 +69,7 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppError(http.StatusInternalServerError, "internal server error", err)
 	}
 
+	order.RefreshStateTitle()
+
 	return ctx.JSON(http.StatusOK, order)
 }
