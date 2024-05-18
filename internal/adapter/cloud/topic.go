@@ -3,6 +3,7 @@ package cloud
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -66,6 +67,8 @@ func (s *AwsSnsService) PublishMessage(ctx context.Context, message interface{})
 	if err != nil {
 		return nil, err
 	}
+
+	slog.InfoContext(ctx, "message published", "topic", s.TopicName, "message_id", *out.MessageId, "message", string(body))
 
 	return out.MessageId, nil
 }

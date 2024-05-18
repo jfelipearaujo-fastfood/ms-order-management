@@ -39,7 +39,7 @@ func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request
 		return err
 	}
 
-	slog.InfoContext(ctx, "message sent to topic %s with id %s", s.topic.GetTopicName(), messageId)
+	slog.InfoContext(ctx, "message sent to topic", "topic", s.topic.GetTopicName(), "message_id", *messageId)
 
 	order.CalculateTotals()
 
