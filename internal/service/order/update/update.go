@@ -49,6 +49,7 @@ func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request
 	}
 
 	order.RefreshStateTitle()
+	order.CalculateTotals()
 
 	return nil
 }
