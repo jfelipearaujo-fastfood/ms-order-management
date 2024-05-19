@@ -17,6 +17,7 @@ func cleanEnv() {
 
 	os.Unsetenv("DB_NAME")
 	os.Unsetenv("DB_URL")
+	os.Unsetenv("DB_URL_SECRET_NAME")
 
 	os.Unsetenv("AWS_ORDER_PAYMENT_TOPIC_NAME")
 	os.Unsetenv("AWS_UPDATE_ORDER_QUEUE_NAME")
@@ -31,6 +32,7 @@ func TestGetEnvironment(t *testing.T) {
 
 		t.Setenv("DB_NAME", "test")
 		t.Setenv("DB_URL", "db://host:1234")
+		t.Setenv("DB_URL_SECRET_NAME", "db-orders-url-secret")
 
 		t.Setenv("AWS_ORDER_PAYMENT_TOPIC_NAME", "order_payment")
 		t.Setenv("AWS_UPDATE_ORDER_QUEUE_NAME", "update_order")
@@ -42,7 +44,8 @@ func TestGetEnvironment(t *testing.T) {
 				ApiVersion: "v1",
 			},
 			DbConfig: &environment.DatabaseConfig{
-				Url: "db://host:1234",
+				Url:           "db://host:1234",
+				UrlSecretName: "db-orders-url-secret",
 			},
 			CloudConfig: &environment.CloudConfig{
 				OrderPaymentTopicName: "order_payment",
@@ -88,7 +91,8 @@ func TestGetEnvironmentFromFile(t *testing.T) {
 				ApiVersion: "v1",
 			},
 			DbConfig: &environment.DatabaseConfig{
-				Url: "db://host:1234",
+				Url:           "db://host:1234",
+				UrlSecretName: "db-orders-url-secret",
 			},
 			CloudConfig: &environment.CloudConfig{
 				OrderPaymentTopicName: "order_payment",
