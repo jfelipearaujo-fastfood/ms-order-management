@@ -60,7 +60,15 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasOnGoingPayments)
 	}
 
-	request.PaymentId = uuid.NewString()
+	if request.Resend {
+		payment := order.GetOnGoingPayment()
+		if payment == nil {
+			return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasNoOnGoingPayments)
+		}
+		request.PaymentId = payment.PaymentId
+	} else {
+		request.PaymentId = uuid.NewString()
+	}
 
 	request.Items = []send_to_pay.SendToPayItemDto{}
 
