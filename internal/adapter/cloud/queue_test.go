@@ -100,14 +100,15 @@ func TestStartConsuming(t *testing.T) {
 		})
 
 		response := `{
-			"order_id": "c3fdab1b-3c06-4db2-9edc-4760a2429460",
-			"payment": {
-				"id": "9dfa1386-2f52-4cca-b9aa-f9bd6887d447",
-				"state": "Approved"
-			},
-			"order": {
-				"state": "Received"
-			}
+			"Type" : "Notification",
+			"MessageId" : "fc8e9ffd-6122-5c52-8fb9-c13e3ee2629a",
+			"TopicArn" : "arn:aws:sns:us-east-1:000000000000:OrderPaymentTopic",
+			"Message" : "{\"order_id\":\"be6293ff-4ec0-4ed8-95c9-b36ce99aa105\",\"payment_id\":\"a5c81ac9-a549-44c5-bb09-c330116b929f\",\"items\":[{\"id\":\"3822eb8e-3da9-416e-a248-3551fc628566\",\"name\":\"Hamburguer\",\"quantity\":1},{\"id\":\"ca685ace-ef25-4aa3-97f5-489394aa6356\",\"name\":\"Refrigerante\",\"quantity\":1}],\"total_items\":2,\"amount\":59.980000000000004}",
+			"Timestamp" : "2024-05-19T02:01:36.927Z",
+			"SignatureVersion" : "1",
+			"Signature" : "e2Jex1vYJslu5gc0YPvaoprA6Vnbus7VuaQOjKVoegQ8i+5yqtWD47Zl7+O5mh/vLOEcNKkXKVNDk++idzRxEg40uZQcWOwDewqaItZvD2XH6b/mqYAnf4QjAjIF3+orXpSZQn/hatp7KzsYvd7bnPmO3YyzuqwD4t4Zz19GvatIuYsjDkcueWXX5/HOJJhAGSQFg/hnETAnllWZuDAgwDOUF6sPfa7zSUGSyj2ymHlSyMPNOLmM5VMpouujU0lFwYlZqHwg3WbEONRHyZ7Fs6JO8wPRG1J3kUvjcZ7qQwo4ARGTIbXZ7xJv9mYjE79Sdl3S5yXkvg4CambuE9Gpig==",
+			"SigningCertURL" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-60eadc530605d63b8e62a523676ef735.pem",
+			"UnsubscribeURL" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:000000000000:OrderPaymentTopic:961e369d-aee9-40d8-ab2e-4c6a5e2eab95"
 		}`
 
 		stubber.Add(testtools.Stub{
@@ -120,12 +121,12 @@ func TestStartConsuming(t *testing.T) {
 			Output: &sqs.ReceiveMessageOutput{
 				Messages: []types.Message{
 					{
-						MessageId:     aws.String("123"),
+						MessageId:     aws.String("fc8e9ffd-6122-5c52-8fb9-c13e3ee2629a"),
 						Body:          aws.String(response),
 						ReceiptHandle: aws.String("1234567890"),
 					},
 					{
-						MessageId:     aws.String("456"),
+						MessageId:     aws.String("fc8e9ffd-6122-5c52-8fb9-c13e3ee2629b"),
 						Body:          aws.String(response),
 						ReceiptHandle: aws.String("1234567891"),
 					},

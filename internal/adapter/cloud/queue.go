@@ -91,9 +91,21 @@ func (s *AwsSqsService) processMessage(ctx context.Context, message types.Messag
 
 	slog.InfoContext(ctx, "message received", "message_id", *message.MessageId)
 
+	var notification TopicNotification
+
+	err := json.Unmarshal([]byte(*message.Body), &notification)
+	if err != nil {
+		slog.ErrorContext(ctx, "error unmarshalling message", "message_id", *message.MessageId, "error", err)
+	}
+
+	if notification.Type != "Notification" {
+		slog.ErrorContext(ctx, "message is not a notification", "message_id", *message.MessageId)
+		return
+	}
+
 	var request process.ProcessMessageDto
 
-	err := json.Unmarshal([]byte(*message.Body), &request)
+	err = json.Unmarshal([]byte(notification.Message), &request)
 	if err != nil {
 		slog.ErrorContext(ctx, "error unmarshalling message", "message_id", *message.MessageId, "error", err)
 	}
