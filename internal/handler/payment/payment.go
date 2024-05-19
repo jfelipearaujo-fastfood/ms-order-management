@@ -52,7 +52,7 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasNoItems)
 	}
 
-	if order.HasOnGoingPayments() {
+	if !request.Resend && order.HasOnGoingPayments() {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasOnGoingPayments)
 	}
 

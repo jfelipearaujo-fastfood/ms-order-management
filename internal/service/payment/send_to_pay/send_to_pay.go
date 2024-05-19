@@ -51,9 +51,10 @@ func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request
 		s.timeProvider.GetTime(),
 	)
 
-	if err := s.repository.Create(ctx, &payment); err != nil {
-		return err
+	if !request.Resend {
+		if err := s.repository.Create(ctx, &payment); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
