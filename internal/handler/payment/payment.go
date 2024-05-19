@@ -33,6 +33,10 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
 	}
 
+	if err := (&echo.DefaultBinder{}).BindQueryParams(ctx, &request); err != nil {
+		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
+	}
+
 	context := ctx.Request().Context()
 
 	getOrderRequest := get.GetOrderDto{
