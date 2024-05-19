@@ -17,6 +17,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment/loader"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/server"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/logger"
 )
 
 func init() {
@@ -46,6 +47,8 @@ func main() {
 		slog.Error("error loading environment", "error", err)
 		panic(err)
 	}
+
+	logger.SetupLog(config)
 
 	cloudConfig, err := awsConfig.LoadDefaultConfig(ctx)
 	if err != nil {

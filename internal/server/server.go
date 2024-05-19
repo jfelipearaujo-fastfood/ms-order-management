@@ -25,6 +25,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/process"
 	order_update_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/update"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/payment/send_to_pay"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/logger"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -94,6 +95,7 @@ func (s *Server) GetHttpServer() *http.Server {
 
 func (s *Server) RegisterRoutes() http.Handler {
 	e := echo.New()
+	e.Use(logger.Middleware())
 	e.Use(middleware.Recover())
 
 	s.registerHealthCheck(e)
