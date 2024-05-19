@@ -110,12 +110,15 @@ func (s *AwsSqsService) processMessage(ctx context.Context, message types.Messag
 		slog.ErrorContext(ctx, "error unmarshalling message", "message_id", *message.MessageId, "error", err)
 	}
 
-	if err := s.MessageProcessor.Handle(ctx, request); err != nil {
-		slog.ErrorContext(ctx, "error processing message", "message_id", *message.MessageId, "error", err)
-	}
+	if err == nil {
+		slog.InfoContext(ctx, "message unmarshalled", "request", request)
+		if err := s.MessageProcessor.Handle(ctx, request); err != nil {
+			slog.ErrorContext(ctx, "error processing message", "message_id", *message.MessageId, "error", err)
+		}
 
-	if err := s.deleteMessage(ctx, message); err != nil {
-		slog.ErrorContext(ctx, "error deleting message", "message_id", *message.MessageId, "error", err)
+		if err := s.deleteMessage(ctx, message); err != nil {
+			slog.ErrorContext(ctx, "error deleting message", "message_id", *message.MessageId, "error", err)
+		}
 	}
 
 	s.Mutex.Unlock()
