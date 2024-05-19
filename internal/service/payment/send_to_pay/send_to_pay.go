@@ -34,14 +34,17 @@ func (s *Service) Handle(ctx context.Context, order *order_entity.Order, request
 		return err
 	}
 
+	order.CalculateTotals()
+
+	request.TotalItems = order.TotalItems
+	request.Amount = order.TotalPrice
+
 	messageId, err := s.topic.PublishMessage(ctx, request)
 	if err != nil {
 		return err
 	}
 
 	slog.InfoContext(ctx, "message sent to topic", "topic", s.topic.GetTopicName(), "message_id", *messageId)
-
-	order.CalculateTotals()
 
 	payment := payment_entity.NewPayment(
 		order.Id,
