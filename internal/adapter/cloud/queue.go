@@ -93,32 +93,27 @@ func (s *AwsSqsService) processMessage(ctx context.Context, message types.Messag
 
 	var notification TopicNotification
 
-	err := json.Unmarshal([]byte(*message.Body), &notification)
-	if err != nil {
-		slog.ErrorContext(ctx, "error unmarshalling message", "message_id", *message.MessageId, "error", err)
-	}
+	if err := json.Unmarshal([]byte(*message.Body), &notification); err != nil {
+		slog.ErrorContext(ctx, "error unmarshalling message", "error", err)
+	} else {
+		if notification.Type != "Notification" {
+			slog.ErrorContext(ctx, "message is not a notification", "message_id", *message.MessageId)
+		} else {
+			var request process.ProcessMessageDto
 
-	if notification.Type != "Notification" {
-		slog.ErrorContext(ctx, "message is not a notification", "message_id", *message.MessageId)
-		return
-	}
-
-	var request process.ProcessMessageDto
-
-	err = json.Unmarshal([]byte(notification.Message), &request)
-	if err != nil {
-		slog.ErrorContext(ctx, "error unmarshalling message", "message_id", *message.MessageId, "error", err)
-	}
-
-	if err == nil {
-		slog.InfoContext(ctx, "message unmarshalled", "request", request)
-		if err := s.MessageProcessor.Handle(ctx, request); err != nil {
-			slog.ErrorContext(ctx, "error processing message", "message_id", *message.MessageId, "error", err)
+			if err := json.Unmarshal([]byte(notification.Message), &request); err != nil {
+				slog.ErrorContext(ctx, "error unmarshalling message", "message_id", *message.MessageId, "error", err)
+			} else {
+				slog.InfoContext(ctx, "message unmarshalled", "request", request)
+				if err := s.MessageProcessor.Handle(ctx, request); err != nil {
+					slog.ErrorContext(ctx, "error processing message", "message_id", *message.MessageId, "error", err)
+				}
+			}
 		}
+	}
 
-		if err := s.deleteMessage(ctx, message); err != nil {
-			slog.ErrorContext(ctx, "error deleting message", "message_id", *message.MessageId, "error", err)
-		}
+	if err := s.deleteMessage(ctx, message); err != nil {
+		slog.ErrorContext(ctx, "error deleting message", "message_id", *message.MessageId, "error", err)
 	}
 
 	s.Mutex.Unlock()

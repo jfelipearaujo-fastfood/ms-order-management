@@ -295,4 +295,35 @@ func TestOrder(t *testing.T) {
 		// Assert
 		assert.Nil(t, res)
 	})
+
+	t.Run("Should return the on going payment", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		payment := payment_entity.NewPayment(order.Id, "payment_id", 1, 1.23, now)
+		payment.State = payment_entity.WaitingForApproval
+
+		order.Payments = append(order.Payments, payment)
+
+		// Act
+		res := order.GetOnGoingPayment()
+
+		// Assert
+		assert.NotNil(t, res)
+		assert.Equal(t, payment.PaymentId, res.PaymentId)
+	})
+
+	t.Run("Should return nil when there is no on going payment", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+
+		// Act
+		res := order.GetOnGoingPayment()
+
+		// Assert
+		assert.Nil(t, res)
+	})
 }
