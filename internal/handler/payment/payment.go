@@ -33,6 +33,10 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
 	}
 
+	if err := (&echo.DefaultBinder{}).BindQueryParams(ctx, &request); err != nil {
+		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
+	}
+
 	context := ctx.Request().Context()
 
 	getOrderRequest := get.GetOrderDto{
@@ -52,11 +56,19 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasNoItems)
 	}
 
-	if order.HasOnGoingPayments() {
+	if !request.Resend && order.HasOnGoingPayments() {
 		return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasOnGoingPayments)
 	}
 
-	request.PaymentId = uuid.NewString()
+	if request.Resend {
+		payment := order.GetOnGoingPayment()
+		if payment == nil {
+			return custom_error.NewHttpAppErrorFromBusinessError(custom_error.ErrOrderHasNoOnGoingPayments)
+		}
+		request.PaymentId = payment.PaymentId
+	} else {
+		request.PaymentId = uuid.NewString()
+	}
 
 	request.Items = []send_to_pay.SendToPayItemDto{}
 

@@ -10,9 +10,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+
+	"github.com/jfelipearaujo-org/ms-order-management/internal/adapter/cloud"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/environment/loader"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/server"
+	"github.com/jfelipearaujo-org/ms-order-management/internal/shared/logger"
 )
 
 func init() {
@@ -42,6 +47,27 @@ func main() {
 		slog.Error("error loading environment", "error", err)
 		panic(err)
 	}
+
+	logger.SetupLog(config)
+
+	cloudConfig, err := awsConfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	if config.CloudConfig.IsBaseEndpointSet() {
+		cloudConfig.BaseEndpoint = aws.String(config.CloudConfig.BaseEndpoint)
+	}
+
+	secret := cloud.NewSecretService(cloudConfig)
+
+	dbUrl, err := secret.GetSecret(ctx, config.DbConfig.UrlSecretName)
+	if err != nil {
+		slog.Error("error getting secret", "secret_name", config.DbConfig.UrlSecretName, "error", err)
+		panic(err)
+	}
+
+	config.DbConfig.Url = dbUrl
 
 	server := server.NewServer(config)
 

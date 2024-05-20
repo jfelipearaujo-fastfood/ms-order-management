@@ -13,6 +13,7 @@ type SendToPayItemDto struct {
 
 type SendToPayDto struct {
 	OrderID   string `param:"order_id" json:"order_id" validate:"required,uuid4"`
+	Resend    bool   `query:"resend" json:"-"`
 	PaymentId string `json:"payment_id"`
 
 	Items []SendToPayItemDto `json:"items" validate:"required,dive"`

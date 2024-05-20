@@ -38,6 +38,7 @@ func (h *Handler) Handle(ctx echo.Context) error {
 	}
 
 	order.RefreshStateTitle()
+	order.CalculateTotals()
 
 	return ctx.JSON(http.StatusOK, order)
 }

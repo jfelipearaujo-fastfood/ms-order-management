@@ -129,3 +129,13 @@ func (o *Order) GetPaymentByID(paymentID string) *payment_entity.Payment {
 
 	return nil
 }
+
+func (o *Order) GetOnGoingPayment() *payment_entity.Payment {
+	for _, payment := range o.Payments {
+		if payment.IsInState(payment_entity.WaitingForApproval, payment_entity.Approved) {
+			return &payment
+		}
+	}
+
+	return nil
+}

@@ -66,6 +66,110 @@ func TestHandler(t *testing.T) {
 		getOrderService.AssertExpectations(t)
 	})
 
+	t.Run("Should only resend the payment to gateway", func(t *testing.T) {
+		// Arrange
+		sendToPayService := mocks.NewMockSendToPayService[send_to_pay.SendToPayDto](t)
+		getOrderService := mocks.NewMockGetOrderService[get.GetOrderDto](t)
+
+		getOrderService.On("Handle", mock.Anything, mock.Anything).
+			Return(order_entity.Order{
+				Items: []order_entity.Item{
+					{
+						Id: uuid.NewString(),
+					},
+				},
+				Payments: []payment_entity.Payment{
+					{
+						PaymentId: uuid.NewString(),
+						State:     payment_entity.WaitingForApproval,
+					},
+				},
+			}, nil).
+			Once()
+
+		sendToPayService.On("Handle", mock.Anything, mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+
+		reqBody := send_to_pay.SendToPayDto{
+			OrderID: uuid.NewString(),
+		}
+
+		body, err := json.Marshal(reqBody)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest(echo.POST, "/?resend=true", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		resp := httptest.NewRecorder()
+
+		e := echo.New()
+		ctx := e.NewContext(req, resp)
+
+		handler := NewHandler(sendToPayService, getOrderService)
+
+		// Act
+		err = handler.Handle(ctx)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, resp.Code)
+		sendToPayService.AssertExpectations(t)
+		getOrderService.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when try to resend an empty order", func(t *testing.T) {
+		// Arrange
+		sendToPayService := mocks.NewMockSendToPayService[send_to_pay.SendToPayDto](t)
+		getOrderService := mocks.NewMockGetOrderService[get.GetOrderDto](t)
+
+		getOrderService.On("Handle", mock.Anything, mock.Anything).
+			Return(order_entity.Order{
+				Items: []order_entity.Item{
+					{
+						Id: uuid.NewString(),
+					},
+				},
+			}, nil).
+			Once()
+
+		reqBody := send_to_pay.SendToPayDto{
+			OrderID: uuid.NewString(),
+		}
+
+		body, err := json.Marshal(reqBody)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest(echo.POST, "/?resend=true", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		resp := httptest.NewRecorder()
+
+		e := echo.New()
+		ctx := e.NewContext(req, resp)
+
+		handler := NewHandler(sendToPayService, getOrderService)
+
+		// Act
+		err = handler.Handle(ctx)
+
+		// Assert
+		assert.Error(t, err)
+
+		he, ok := err.(*echo.HTTPError)
+		assert.True(t, ok)
+
+		assert.Equal(t, http.StatusBadRequest, he.Code)
+		assert.Equal(t, custom_error.AppError{
+			Code:    http.StatusBadRequest,
+			Message: "operation not allowed",
+			Details: "order has no on going payments",
+		}, he.Message)
+
+		sendToPayService.AssertExpectations(t)
+		getOrderService.AssertExpectations(t)
+	})
+
 	t.Run("Should return error when order is not found", func(t *testing.T) {
 		// Arrange
 		sendToPayService := mocks.NewMockSendToPayService[send_to_pay.SendToPayDto](t)

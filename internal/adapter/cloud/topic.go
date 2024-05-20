@@ -3,6 +3,7 @@ package cloud
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -14,6 +15,18 @@ type TopicService interface {
 	GetTopicName() string
 	UpdateTopicArn(ctx context.Context) error
 	PublishMessage(ctx context.Context, message interface{}) (*string, error)
+}
+
+type TopicNotification struct {
+	Type             string `json:"Type"`
+	MessageId        string `json:"MessageId"`
+	TopicArn         string `json:"TopicArn"`
+	Message          string `json:"Message"`
+	Timestamp        string `json:"Timestamp"`
+	SignatureVersion string `json:"SignatureVersion"`
+	Signature        string `json:"Signature"`
+	SigningCertURL   string `json:"SigningCertURL"`
+	UnsubscribeURL   string `json:"UnsubscribeURL"`
 }
 
 type AwsSnsService struct {
@@ -66,6 +79,8 @@ func (s *AwsSnsService) PublishMessage(ctx context.Context, message interface{})
 	if err != nil {
 		return nil, err
 	}
+
+	slog.InfoContext(ctx, "message published", "topic", s.TopicName, "message_id", *out.MessageId, "message", string(body))
 
 	return out.MessageId, nil
 }
