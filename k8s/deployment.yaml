@@ -18,6 +18,7 @@ spec:
       labels:
         app: ms-order-management
     spec:
+      automountServiceAccountToken: false
       serviceAccountName: sa-orders
       containers:
         - name: ms-order-management
