@@ -26,6 +26,8 @@ func (h *Handler) Handle(ctx echo.Context) error {
 		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
 	}
 
+	request.CustomerId = ctx.Get("userId").(string)
+
 	context := ctx.Request().Context()
 
 	order, err := h.service.Handle(context, request)

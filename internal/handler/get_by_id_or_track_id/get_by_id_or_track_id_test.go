@@ -34,6 +34,7 @@ func TestHandleGetById(t *testing.T) {
 		ctx.SetPath("/api/v1/orders/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(uuid.NewString())
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -64,6 +65,7 @@ func TestHandleGetById(t *testing.T) {
 		ctx.SetPath("/api/v1/orders/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(uuid.NewString())
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -103,6 +105,7 @@ func TestHandleGetById(t *testing.T) {
 		ctx.SetPath("/api/v1/orders/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(uuid.NewString())
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -144,6 +147,7 @@ func TestHandleGetByTrackId(t *testing.T) {
 		ctx.SetPath("/api/v1/orders/tracking/:track_id")
 		ctx.SetParamNames("track_id")
 		ctx.SetParamValues("ABC-123")
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -174,6 +178,7 @@ func TestHandleGetByTrackId(t *testing.T) {
 		ctx.SetPath("/api/v1/orders/tracking/:track_id")
 		ctx.SetParamNames("track_id")
 		ctx.SetParamValues("ABC-123")
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -213,6 +218,7 @@ func TestHandleGetByTrackId(t *testing.T) {
 		ctx.SetPath("/api/v1/orders/tracking/:track_id")
 		ctx.SetParamNames("track_id")
 		ctx.SetParamValues("ABC-123")
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 

@@ -21,6 +21,7 @@ import (
 	"github.com/jfelipearaujo-org/ms-order-management/internal/provider/time_provider"
 	order_repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository/order"
 	payment_repository "github.com/jfelipearaujo-org/ms-order-management/internal/repository/payment"
+	token "github.com/jfelipearaujo-org/ms-order-management/internal/server/middlewares"
 	order_create_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/create"
 	order_get_service "github.com/jfelipearaujo-org/ms-order-management/internal/service/order/get"
 	"github.com/jfelipearaujo-org/ms-order-management/internal/service/order/process"
@@ -121,11 +122,12 @@ func (s *Server) registerOrderHandlers(e *echo.Group) {
 	sendToPaymentHandler := payment.NewHandler(s.Dependency.SendToPayService, s.Dependency.GetOrderService)
 	updateOrderHandler := update.NewHandler(s.Dependency.GetOrderService, s.Dependency.UpdateOrderService)
 
+	e.Use(token.Middleware())
 	e.POST("/orders", createOrderHandler.Handle)
 	e.POST("/orders/:id/items", addOrderItemHandler.Handle)
 	e.GET("/orders/:id", getOrderByIdOrTrackIdHandler.Handle)
 	e.GET("/orders/tracking/:track_id", getOrderByIdOrTrackIdHandler.Handle)
-	e.GET("/orders/customer/:customer_id", getOrderByIdOrTrackIdHandler.Handle)
+	e.GET("/orders/customer", getOrderByIdOrTrackIdHandler.Handle)
 	e.POST("/orders/:order_id/payment", sendToPaymentHandler.Handle)
 	e.PATCH("/orders/:id", updateOrderHandler.Handle)
 }

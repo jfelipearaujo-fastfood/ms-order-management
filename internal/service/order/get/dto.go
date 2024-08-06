@@ -9,7 +9,7 @@ import (
 type GetOrderDto struct {
 	OrderId    string `param:"id" validate:"uuid-when-not-empty"`
 	TrackId    string `param:"track_id" validate:"track-id-when-not-empty"`
-	CustomerId string `param:"customer_id" validate:"uuid-when-not-empty"`
+	CustomerId string
 }
 
 func (dto *GetOrderDto) FindViaID() bool {
