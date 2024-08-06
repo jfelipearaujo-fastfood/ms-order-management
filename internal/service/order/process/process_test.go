@@ -209,7 +209,7 @@ func TestHandlePaymentResponse(t *testing.T) {
 
 		orderRepository.On("GetByID", ctx, mock.Anything).
 			Return(order, nil).
-			Once()
+			Times(2)
 
 		paymentRepository.On("Update", ctx, mock.Anything).
 			Return(nil).
@@ -367,6 +367,48 @@ func TestHandlePaymentResponse(t *testing.T) {
 
 		// Assert
 		assert.Error(t, err)
+		orderRepository.AssertExpectations(t)
+		paymentRepository.AssertExpectations(t)
+		timeProvider.AssertExpectations(t)
+	})
+
+	t.Run("Should update the order state to cancelled when all payments are rejected", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+
+		orderRepository := mocks.NewMockOrderRepository(t)
+		paymentRepository := mocks.NewMockPaymentRepository(t)
+		timeProvider := provider_mocks.NewMockTimeProvider(t)
+
+		message := ProcessMessageDto{
+			OrderId: "order_id",
+			PaymentResponse: &PaymentResponse{
+				PaymentId: "3",
+				State:     "Rejected",
+			},
+		}
+
+		order := order_entity.NewOrder("customer_id", time.Now())
+		order.Payments = []payment_entity.Payment{
+			{PaymentId: "1", State: payment_entity.Rejected},
+			{PaymentId: "2", State: payment_entity.Rejected},
+			{PaymentId: "3", State: payment_entity.WaitingForApproval},
+		}
+
+		orderRepository.On("GetByID", ctx, "order_id").Return(order, nil)
+
+		paymentRepository.On("Update", ctx, mock.Anything).Return(nil)
+		orderRepository.On("Update", ctx, mock.Anything, mock.Anything).Return(nil)
+
+		timeProvider.On("GetTime").Return(time.Now())
+
+		service := NewService(orderRepository, paymentRepository, timeProvider)
+
+		// Act
+		err := service.Handle(ctx, message)
+
+		// Assert
+		assert.NoError(t, err)
 		orderRepository.AssertExpectations(t)
 		paymentRepository.AssertExpectations(t)
 		timeProvider.AssertExpectations(t)

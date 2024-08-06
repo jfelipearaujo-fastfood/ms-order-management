@@ -73,6 +73,21 @@ func (s *Service) Handle(ctx context.Context, message ProcessMessageDto) error {
 		if err := s.paymentRepository.Update(ctx, payment); err != nil {
 			return err
 		}
+
+		order, err = s.orderRepository.GetByID(ctx, message.OrderId)
+		if err != nil {
+			return err
+		}
+
+		if order.ShouldCancel() {
+			if err := order.UpdateState(order_entity.Cancelled, s.timeProvider.GetTime()); err != nil {
+				return err
+			}
+
+			if err := s.orderRepository.Update(ctx, &order, false); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

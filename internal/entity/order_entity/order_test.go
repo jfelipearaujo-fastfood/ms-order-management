@@ -327,3 +327,54 @@ func TestOrder(t *testing.T) {
 		assert.Nil(t, res)
 	})
 }
+
+func TestOrder_ShouldCancel(t *testing.T) {
+	t.Run("should cancel when all payments are rejected", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+
+		order.Payments = []payment_entity.Payment{
+			{PaymentId: "1", State: payment_entity.Rejected},
+			{PaymentId: "2", State: payment_entity.Rejected},
+			{PaymentId: "3", State: payment_entity.Rejected},
+		}
+
+		// Act
+		res := order.ShouldCancel()
+
+		// Assert
+		assert.True(t, res)
+	})
+
+	t.Run("should not cancel when there is at least one payment that is not rejected", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+		payment := payment_entity.NewPayment(order.Id, "payment_id", 1, 1.23, now)
+		payment.State = payment_entity.Approved
+
+		order.Payments = append(order.Payments, payment)
+
+		// Act
+		res := order.ShouldCancel()
+
+		// Assert
+		assert.False(t, res)
+	})
+
+	t.Run("should not cancel when there are no payments", func(t *testing.T) {
+		// Arrange
+		now := time.Now()
+
+		order := NewOrder("customer_id", now)
+
+		// Act
+		res := order.ShouldCancel()
+
+		// Assert
+		assert.False(t, res)
+	})
+}
