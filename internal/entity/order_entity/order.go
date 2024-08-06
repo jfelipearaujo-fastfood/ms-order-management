@@ -139,3 +139,21 @@ func (o *Order) GetOnGoingPayment() *payment_entity.Payment {
 
 	return nil
 }
+
+func (o *Order) ShouldCancel() bool {
+	numOfPayments := len(o.Payments)
+
+	if numOfPayments == 0 {
+		return false
+	}
+
+	paymentsRejected := 0
+
+	for _, payment := range o.Payments {
+		if payment.IsInState(payment_entity.Rejected) {
+			paymentsRejected++
+		}
+	}
+
+	return paymentsRejected == 3
+}
