@@ -22,10 +22,8 @@ func NewHandler(
 }
 
 func (h *Handler) Handle(ctx echo.Context) error {
-	var request create.CreateOrderDto
-
-	if err := ctx.Bind(&request); err != nil {
-		return custom_error.NewHttpAppError(http.StatusBadRequest, "invalid request", err)
+	request := create.CreateOrderDto{
+		CustomerID: ctx.Get("userId").(string),
 	}
 
 	context := ctx.Request().Context()
