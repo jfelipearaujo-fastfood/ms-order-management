@@ -16,6 +16,8 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/network"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -60,12 +62,18 @@ type feature struct {
 	OrderId    string
 	Items      []string
 	StateTitle string
+	Token      string
 }
 
 var state = NewState[feature](featureKey)
 
 func iCreateAnOrder(ctx context.Context) (context.Context, error) {
 	feat := state.retrieve(ctx)
+
+	token, err := generateToken(uuid.NewString(), time.Minute*10)
+	if err != nil {
+		return ctx, err
+	}
 
 	body := `{
 		"customer_id": "1387d7f1-732e-4ab4-8c0a-adb13b0d7797"
@@ -77,6 +85,7 @@ func iCreateAnOrder(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -100,6 +109,7 @@ func iCreateAnOrder(ctx context.Context) (context.Context, error) {
 		return ctx, fmt.Errorf("Order ID not found")
 	}
 
+	feat.Token = token
 	feat.OrderId = orderId
 
 	return state.enrich(ctx, feat), nil
@@ -125,6 +135,7 @@ func iAddedAnItemToTheOrder(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", feat.Token)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -147,6 +158,7 @@ func iRetrieveTheOrder(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", feat.Token)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -275,6 +287,22 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 		return ctx, err
 	})
+}
+
+func generateToken(userId string, expire time.Duration) (string, error) {
+	claims := jwt.MapClaims{
+		"sub": userId,
+		"exp": time.Now().Add(expire).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString([]byte("my-secret"))
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Bearer %s", tokenString), nil
 }
 
 func createApiContainer(ctx context.Context, network *testcontainers.DockerNetwork) (testcontainers.Container, context.Context, error) {
