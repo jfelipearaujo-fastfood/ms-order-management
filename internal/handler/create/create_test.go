@@ -26,9 +26,7 @@ func TestHandle(t *testing.T) {
 			Return(&order_entity.Order{}, nil).
 			Once()
 
-		reqBody := create.CreateOrderDto{
-			CustomerID: uuid.NewString(),
-		}
+		reqBody := create.CreateOrderDto{}
 
 		body, err := json.Marshal(reqBody)
 		assert.NoError(t, err)
@@ -40,6 +38,7 @@ func TestHandle(t *testing.T) {
 
 		e := echo.New()
 		ctx := e.NewContext(req, resp)
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -52,50 +51,6 @@ func TestHandle(t *testing.T) {
 		service.AssertExpectations(t)
 	})
 
-	t.Run("Should return bad request when request is invalid", func(t *testing.T) {
-		//  Arrange
-		service := mocks.NewMockCreateOrderService[create.CreateOrderDto](t)
-
-		service.On("Handle", mock.Anything, mock.Anything).
-			Return(nil, custom_error.ErrRequestNotValid).
-			Once()
-
-		reqBody := create.CreateOrderDto{
-			CustomerID: "invalid",
-		}
-
-		body, err := json.Marshal(reqBody)
-		assert.NoError(t, err)
-
-		req := httptest.NewRequest(echo.POST, "/", bytes.NewBuffer(body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		resp := httptest.NewRecorder()
-
-		e := echo.New()
-		ctx := e.NewContext(req, resp)
-
-		handler := NewHandler(service)
-
-		// Act
-		err = handler.Handle(ctx)
-
-		// Assert
-		assert.Error(t, err)
-
-		he, ok := err.(*echo.HTTPError)
-		assert.True(t, ok)
-
-		assert.Equal(t, http.StatusUnprocessableEntity, he.Code)
-		assert.Equal(t, custom_error.AppError{
-			Code:    http.StatusUnprocessableEntity,
-			Message: "validation error",
-			Details: "request not valid, please check the fields",
-		}, he.Message)
-
-		service.AssertExpectations(t)
-	})
-
 	t.Run("Should return conflict when order already exists", func(t *testing.T) {
 		//  Arrange
 		service := mocks.NewMockCreateOrderService[create.CreateOrderDto](t)
@@ -104,9 +59,7 @@ func TestHandle(t *testing.T) {
 			Return(nil, custom_error.ErrOrderAlreadyExists).
 			Once()
 
-		reqBody := create.CreateOrderDto{
-			CustomerID: uuid.NewString(),
-		}
+		reqBody := create.CreateOrderDto{}
 
 		body, err := json.Marshal(reqBody)
 		assert.NoError(t, err)
@@ -118,6 +71,7 @@ func TestHandle(t *testing.T) {
 
 		e := echo.New()
 		ctx := e.NewContext(req, resp)
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 
@@ -148,9 +102,7 @@ func TestHandle(t *testing.T) {
 			Return(nil, assert.AnError).
 			Once()
 
-		reqBody := create.CreateOrderDto{
-			CustomerID: uuid.NewString(),
-		}
+		reqBody := create.CreateOrderDto{}
 
 		body, err := json.Marshal(reqBody)
 		assert.NoError(t, err)
@@ -162,6 +114,7 @@ func TestHandle(t *testing.T) {
 
 		e := echo.New()
 		ctx := e.NewContext(req, resp)
+		ctx.Set("userId", uuid.NewString())
 
 		handler := NewHandler(service)
 

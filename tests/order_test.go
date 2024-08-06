@@ -75,12 +75,8 @@ func iCreateAnOrder(ctx context.Context) (context.Context, error) {
 		return ctx, err
 	}
 
-	body := `{
-		"customer_id": "1387d7f1-732e-4ab4-8c0a-adb13b0d7797"
-	}`
-
 	route := fmt.Sprintf("%s/orders", feat.HostApi)
-	req, err := http.NewRequest(http.MethodPost, route, bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest(http.MethodPost, route, nil)
 	if err != nil {
 		return ctx, err
 	}
